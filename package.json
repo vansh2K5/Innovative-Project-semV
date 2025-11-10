@@ -6,16 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup": "node scripts/setup-mongodb.js",
+    "setup:db": "node scripts/setup-mongodb.js"
   },
   "dependencies": {
     "@radix-ui/react-menubar": "^1.1.16",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gsap": "^3.13.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.552.0",
+    "mongoose": "^8.19.3",
     "motion": "^12.23.24",
     "next": "16.0.1",
     "ogl": "^1.0.11",
@@ -27,6 +32,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
