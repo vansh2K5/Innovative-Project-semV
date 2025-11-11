@@ -42,13 +42,7 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
 
-    // Users see events they created or are assigned to, admins see all
-    if (tokenUser.role !== 'admin') {
-      query.$or = [
-        { createdBy: tokenUser.userId },
-        { assignedTo: tokenUser.userId },
-      ];
-    }
+    // All users (both admin and regular) can see all events
 
     if (startDate && endDate) {
       query.startDate = {

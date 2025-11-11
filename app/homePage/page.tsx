@@ -15,6 +15,7 @@ import {
   UsersIcon,
   LogOutIcon,
   SettingsIcon,
+  TrashIcon,
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -59,6 +60,13 @@ const HomePage: React.FC = () => {
 
         // Get user info
         const user = JSON.parse(userStr);
+        
+        // Redirect admin and securityadmin to admin panel BEFORE setting state
+        if (user.role === 'admin' || user.role === 'securityadmin') {
+          window.location.href = '/adminUi';
+          return;
+        }
+
         setUserName(user.name || 'User');
         setUserRole(user.role || 'user');
 
@@ -114,6 +122,90 @@ const HomePage: React.FC = () => {
     } catch (error) {
       console.error('Error refreshing events:', error);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearAllEvents = async () => {
+    if (!confirm('Are you sure you want to delete ALL events? This action cannot be undone!')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/events/clear', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to clear events');
+      }
+
+      alert(`Successfully deleted ${data.deletedCount} events`);
+      
+      // Refresh events
+      setLoading(true);
+      const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+
+      const eventsData = await api.events.getAll({
+        startDate: startOfMonth.toISOString(),
+        endDate: endOfMonth.toISOString(),
+        limit: 100,
+      });
+
+      setEvents(eventsData.events);
+      setLoading(false);
+    } catch (error: any) {
+      console.error('Clear events error:', error);
+      alert(error.message || 'Failed to clear events');
+      setLoading(false);
+    }
+  };
+
+  const handleClearMyEvents = async () => {
+    if (!confirm('Are you sure you want to delete all YOUR events? This action cannot be undone!')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/events/clear-my-events', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to clear your events');
+      }
+
+      alert(`Successfully deleted ${data.deletedCount} of your events`);
+      
+      // Refresh events
+      setLoading(true);
+      const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+
+      const eventsData = await api.events.getAll({
+        startDate: startOfMonth.toISOString(),
+        endDate: endOfMonth.toISOString(),
+        limit: 100,
+      });
+
+      setEvents(eventsData.events);
+      setLoading(false);
+    } catch (error: any) {
+      console.error('Clear my events error:', error);
+      alert(error.message || 'Failed to clear your events');
       setLoading(false);
     }
   };
@@ -192,7 +284,7 @@ const HomePage: React.FC = () => {
     <ProtectedRoute>
     <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
       {/* Static Sidebar - Always Visible */}
-      <aside className="w-64 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
+      <aside className="w-64 h-screen sticky top-0 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
         {/* User Profile */}
         <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
@@ -206,22 +298,32 @@ const HomePage: React.FC = () => {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1">
-          {userRole === 'admin' && (
+          {userRole === 'admin' ? (
+            <>
+              <button
+                onClick={() => router.push('/adminUi')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+              >
+                <HomeIcon size={18} />
+                <span>Admin Home</span>
+              </button>
+              <button
+                onClick={() => router.push('/homePage')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
+              >
+                <CalendarIcon size={18} />
+                <span>Calendar</span>
+              </button>
+            </>
+          ) : (
             <button
-              onClick={() => router.push('/adminUi')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+              onClick={() => router.push('/homePage')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
             >
               <HomeIcon size={18} />
               <span>Home</span>
             </button>
           )}
-          <button
-            onClick={() => router.push('/homePage')}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
-          >
-            <CalendarIcon size={18} />
-            <span>Calendar</span>
-          </button>
           <button
             onClick={() => router.push('/applications')}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
@@ -229,15 +331,6 @@ const HomePage: React.FC = () => {
             <AppWindowIcon size={18} />
             <span>Applications</span>
           </button>
-          {userRole === 'admin' && (
-            <button
-              onClick={() => alert('Admin Panel coming soon!')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
-            >
-              <UsersIcon size={18} />
-              <span>Admin Panel</span>
-            </button>
-          )}
           <button
             onClick={() => alert('Settings coming soon!')}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
@@ -273,35 +366,55 @@ const HomePage: React.FC = () => {
 
       {/* Simple Header */}
       <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-              <CalendarIcon size={16} className="text-white" />
-            </div>
-            <h1 className="text-white text-xl font-semibold">Calendar</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+            <CalendarIcon size={16} className="text-white" />
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all shadow-lg"
-          >
-            <PlusIcon size={18} />
-            Create Event
-          </button>
+          <h1 className="text-white text-xl font-semibold">Calendar</h1>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="relative z-20 p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-white text-4xl font-bold select-none">Calendar Overview</h1>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              <PlusIcon size={20} />
-              Create Event
-            </button>
+            <div className="flex gap-3">
+              {userRole === 'admin' && (
+                <>
+                  <button
+                    onClick={handleClearAllEvents}
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
+                  >
+                    <TrashIcon size={20} />
+                    Clear All Events
+                  </button>
+                  <button
+                    onClick={handleClearMyEvents}
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
+                  >
+                    <TrashIcon size={20} />
+                    Clear My Events
+                  </button>
+                </>
+              )}
+              {userRole === 'user' && (
+                <button
+                  onClick={handleClearMyEvents}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
+                >
+                  <TrashIcon size={20} />
+                  Clear My Events
+                </button>
+              )}
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
+              >
+                <PlusIcon size={20} />
+                Create Event
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

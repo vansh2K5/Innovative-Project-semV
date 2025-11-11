@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if user is admin
-    if (tokenUser.role !== 'admin') {
+    // Check if user is admin or securityadmin
+    if (tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
       return NextResponse.json(
         { error: 'Forbidden: Admin access required' },
         { status: 403 }
@@ -108,8 +108,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is admin
-    if (tokenUser.role !== 'admin') {
+    // Check if user is admin or securityadmin
+    if (tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
       return NextResponse.json(
         { error: 'Forbidden: Admin access required' },
         { status: 403 }

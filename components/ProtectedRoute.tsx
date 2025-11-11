@@ -62,8 +62,8 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       }
 
       // Check if admin access is required
-      if (requireAdmin && user.role !== 'admin') {
-        console.log('Admin required but user is not admin, redirecting to homePage');
+      if (requireAdmin && user.role !== 'admin' && user.role !== 'securityadmin') {
+        console.log('Admin required but user is not admin/securityadmin, redirecting to homePage');
         router.push('/homePage');
         return;
       }

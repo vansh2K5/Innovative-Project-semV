@@ -29,6 +29,7 @@ const AdminPage: React.FC = () => {
   const [upcomingEvents, setUpcomingEvents] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [userName, setUserName] = useState<string>("Admin");
+  const [userRole, setUserRole] = useState<string>("admin");
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showUsersModal, setShowUsersModal] = useState<boolean>(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -39,46 +40,6 @@ const AdminPage: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (!token || !userStr) {
-          router.push('/login');
-          return;
-        }
-
-        // Get user info
-        const user = JSON.parse(userStr);
-        setUserName(user.name || 'Admin');
-
-        // Verify admin role
-        if (user.role !== 'admin') {
-          router.push('/homePage');
-          return;
-        }
-
-        // Fetch users count
-        const usersData = await api.users.getAll({ page: 1, limit: 1 });
-        setTotalUsers(usersData.pagination.total);
-
-        // Fetch upcoming events
-        const today = new Date().toISOString();
-        const eventsData = await api.events.getAll({ 
-          startDate: today,
-          limit: 100 
-        });
-        setUpcomingEvents(eventsData.pagination.total);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Don't redirect on error, just show the error in console
-        // User might not have permissions or API might be having issues
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [router]);
 
@@ -96,9 +57,32 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const handleEventCreated = async () => {
-    // Refresh event count after creating a new one
+  const fetchData = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      if (!token || !userStr) {
+        router.push('/login');
+        return;
+      }
+
+      // Get user info
+      const user = JSON.parse(userStr);
+      setUserName(user.name || 'Admin');
+      setUserRole(user.role || 'admin');
+
+      // Verify admin or securityadmin role
+      if (user.role !== 'admin' && user.role !== 'securityadmin') {
+        router.push('/homePage');
+        return;
+      }
+
+      // Fetch users count
+      const usersData = await api.users.getAll({ page: 1, limit: 1 });
+      setTotalUsers(usersData.pagination.total);
+
+      // Fetch upcoming events
       const today = new Date().toISOString();
       const eventsData = await api.events.getAll({ 
         startDate: today,
@@ -106,7 +90,42 @@ const AdminPage: React.FC = () => {
       });
       setUpcomingEvents(eventsData.pagination.total);
     } catch (error) {
-      console.error('Error refreshing events:', error);
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEventCreated = async () => {
+    // Refresh data after creating an event
+    fetchData();
+  };
+
+  const handleClearAllEvents = async () => {
+    if (!confirm('Are you sure you want to delete ALL events? This action cannot be undone!')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/events/clear', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to clear events');
+      }
+
+      alert(`Successfully deleted ${data.deletedCount} events`);
+      fetchData(); // Refresh the dashboard
+    } catch (error: any) {
+      console.error('Clear events error:', error);
+      alert(error.message || 'Failed to clear events');
     }
   };
 
@@ -272,7 +291,7 @@ const AdminPage: React.FC = () => {
   return (
     <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
       {/* Static Sidebar - Always Visible */}
-      <aside className="w-64 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
+      <aside className="w-64 h-screen sticky top-0 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
         {/* User Profile */}
         <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
@@ -291,7 +310,7 @@ const AdminPage: React.FC = () => {
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
           >
             <HomeIcon size={18} />
-            <span>Home</span>
+            <span>Admin Home</span>
           </button>
           <button
             onClick={() => router.push('/homePage')}
@@ -307,13 +326,15 @@ const AdminPage: React.FC = () => {
             <AppWindowIcon size={18} />
             <span>Applications</span>
           </button>
-          <button
-            onClick={() => alert('Admin Panel coming soon!')}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
-          >
-            <UsersIcon size={18} />
-            <span>Admin Panel</span>
-          </button>
+          {(userRole === 'admin' || userRole === 'securityadmin') && (
+            <button
+              onClick={() => router.push('/security')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 transition-all text-sm font-semibold"
+            >
+              <ShieldIcon size={18} />
+              <span>Security</span>
+            </button>
+          )}
           <button
             onClick={() => alert('Settings coming soon!')}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
@@ -372,11 +393,18 @@ const AdminPage: React.FC = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            <Card className="bg-white/15 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-7 transition-all hover:shadow-[0_8px_32px_0_rgba(58,41,255,.25)] hover:scale-[1.015]">
-              <h2 className="text-white font-semibold text-lg mb-2">Total Users</h2>
+            <Card 
+              className="bg-white/15 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-7 transition-all hover:shadow-[0_8px_32px_0_rgba(58,41,255,.25)] hover:scale-[1.015] cursor-pointer"
+              onClick={() => setShowUsersModal(true)}
+            >
+              <h2 className="text-white font-semibold text-lg mb-2 flex items-center gap-2">
+                <UsersIcon size={20} />
+                User Management
+              </h2>
               <p className="text-white/70 text-sm">
                 {loading ? 'Loading...' : `${totalUsers} Active Users`}
               </p>
+              <p className="text-white/50 text-xs mt-2">Click to manage users</p>
             </Card>
             <Card className="bg-white/15 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-7 transition-all hover:shadow-[0_8px_32px_0_rgba(58,41,255,.25)] hover:scale-[1.015] cursor-pointer" onClick={() => router.push('/homePage')}>
               <h2 className="text-white font-semibold text-lg mb-2">Calendar</h2>
@@ -474,6 +502,7 @@ const AdminPage: React.FC = () => {
                           >
                             <option value="user" className="bg-purple-900">User</option>
                             <option value="admin" className="bg-purple-900">Admin</option>
+                            <option value="securityadmin" className="bg-purple-900">Security Admin</option>
                           </select>
                         </div>
                         <div className="flex gap-2 justify-end">
@@ -500,12 +529,14 @@ const AdminPage: React.FC = () => {
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-white font-bold text-lg">{user.name}</h3>
                             <span className={`text-xs px-2 py-1 rounded ${
-                              user.role === 'admin' 
+                              user.role === 'securityadmin'
+                                ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-cyan-200 border border-cyan-400/50'
+                                : user.role === 'admin' 
                                 ? 'bg-purple-500/30 text-purple-200 border border-purple-400/50' 
                                 : 'bg-blue-500/30 text-blue-200 border border-blue-400/50'
                             }`}>
                               <ShieldIcon size={12} className="inline mr-1" />
-                              {user.role}
+                              {user.role === 'securityadmin' ? 'Security Admin' : user.role}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-white/70 text-sm">
@@ -529,6 +560,20 @@ const AdminPage: React.FC = () => {
                             const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
                             const isCurrentUser = currentUser && (currentUser.userId === user._id || currentUser._id === user._id);
                             
+                            // Security Admin cannot delete anyone
+                            if (userRole === 'securityadmin') {
+                              return (
+                                <button
+                                  disabled
+                                  className="p-2 bg-gray-600/50 text-white/50 rounded-lg cursor-not-allowed"
+                                  title="Security Admins cannot delete users"
+                                >
+                                  <TrashIcon size={18} />
+                                </button>
+                              );
+                            }
+                            
+                            // Cannot delete yourself
                             if (isCurrentUser) {
                               return (
                                 <button
@@ -541,6 +586,7 @@ const AdminPage: React.FC = () => {
                               );
                             }
                             
+                            // Admin can delete anyone except themselves
                             return (
                               <button
                                 onClick={() => handleDeleteUser(user._id)}
@@ -623,7 +669,11 @@ const AdminPage: React.FC = () => {
                 >
                   <option value="user" className="bg-purple-900">User</option>
                   <option value="admin" className="bg-purple-900">Admin</option>
+                  <option value="securityadmin" className="bg-purple-900">Security Admin</option>
                 </select>
+                <p className="text-white/50 text-xs mt-1">
+                  Security Admin &gt; Admin &gt; User
+                </p>
               </div>
 
               <div className="flex gap-3 pt-4">

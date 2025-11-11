@@ -87,7 +87,7 @@ const ApplicationsPage: React.FC = () => {
     <ProtectedRoute>
       <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
         {/* Static Sidebar - Always Visible */}
-        <aside className="w-64 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
+        <aside className="w-64 h-screen sticky top-0 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
           {/* User Profile */}
           <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
@@ -101,20 +101,32 @@ const ApplicationsPage: React.FC = () => {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
-            <button
-              onClick={() => router.push('/adminUi')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
-            >
-              <HomeIcon size={18} />
-              <span>Home</span>
-            </button>
-            <button
-              onClick={() => router.push('/homePage')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
-            >
-              <CalendarIcon size={18} />
-              <span>Calendar</span>
-            </button>
+            {userRole === 'admin' ? (
+              <>
+                <button
+                  onClick={() => router.push('/adminUi')}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+                >
+                  <HomeIcon size={18} />
+                  <span>Admin Home</span>
+                </button>
+                <button
+                  onClick={() => router.push('/homePage')}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+                >
+                  <CalendarIcon size={18} />
+                  <span>Calendar</span>
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => router.push('/homePage')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+              >
+                <HomeIcon size={18} />
+                <span>Home</span>
+              </button>
+            )}
             <button
               onClick={() => router.push('/applications')}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
@@ -122,15 +134,6 @@ const ApplicationsPage: React.FC = () => {
               <AppWindowIcon size={18} />
               <span>Applications</span>
             </button>
-            {userRole === 'admin' && (
-              <button
-                onClick={() => alert('Admin Panel coming soon!')}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
-              >
-                <UsersIcon size={18} />
-                <span>Admin Panel</span>
-              </button>
-            )}
             <button
               onClick={() => alert('Settings coming soon!')}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
@@ -178,7 +181,7 @@ const ApplicationsPage: React.FC = () => {
 
           {/* Applications Grid */}
           <div className="relative z-20 p-8">
-            <div className="max-w-7xl mx-auto">
+            <div className="w-full">
               {/* Header */}
               <div className="mb-8">
                 <h2 className="text-white text-3xl font-bold mb-2">

@@ -32,8 +32,8 @@ export async function GET(
 
     const { id } = await params;
 
-    // Users can view their own profile, admins can view any profile
-    if (tokenUser.userId !== id && tokenUser.role !== 'admin') {
+    // Users can view their own profile, admins and securityadmins can view any profile
+    if (tokenUser.userId !== id && tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -88,8 +88,8 @@ export async function PUT(
 
     const { id } = await params;
 
-    // Users can update their own profile, admins can update any profile
-    if (tokenUser.userId !== id && tokenUser.role !== 'admin') {
+    // Users can update their own profile, admins and securityadmins can update any profile
+    if (tokenUser.userId !== id && tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }

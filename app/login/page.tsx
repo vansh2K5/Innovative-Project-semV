@@ -61,7 +61,7 @@ const Page = () => {
       setTimeout(() => {
         // Redirect based on role
         console.log('Redirecting user with role:', data.user.role);
-        if (data.user.role === "admin") {
+        if (data.user.role === "admin" || data.user.role === "securityadmin") {
           console.log('Redirecting to /adminUi');
           window.location.href = "/adminUi";
         } else {
