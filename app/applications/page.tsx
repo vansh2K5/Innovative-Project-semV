@@ -17,6 +17,7 @@ import {
   VideoIcon,
   LayoutDashboardIcon,
   ChartPieIcon,
+  ShieldIcon,
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -101,7 +102,7 @@ const ApplicationsPage: React.FC = () => {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1">
-            {userRole === 'admin' ? (
+            {(userRole === 'admin' || userRole === 'securityadmin') ? (
               <>
                 <button
                   onClick={() => router.push('/adminUi')}
@@ -134,6 +135,15 @@ const ApplicationsPage: React.FC = () => {
               <AppWindowIcon size={18} />
               <span>Applications</span>
             </button>
+            {(userRole === 'admin' || userRole === 'securityadmin') && (
+              <button
+                onClick={() => router.push('/security')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 transition-all text-sm font-semibold"
+              >
+                <ShieldIcon size={18} />
+                <span>Security</span>
+              </button>
+            )}
             <button
               onClick={() => alert('Settings coming soon!')}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
