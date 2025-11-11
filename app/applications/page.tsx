@@ -15,12 +15,12 @@ import {
   ExternalLinkIcon,
   UsersIcon,
   VideoIcon,
+  LayoutDashboardIcon,
+  ChartPieIcon,
 } from "lucide-react";
 import api from "@/lib/api";
 
 const ApplicationsPage: React.FC = () => {
-  const [isHidden, setIsHidden] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [userName, setUserName] = useState<string>("User");
   const [userRole, setUserRole] = useState<string>("user");
   const router = useRouter();
@@ -85,113 +85,99 @@ const ApplicationsPage: React.FC = () => {
 
   return (
     <ProtectedRoute>
-      <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
-        <Aurora />
-
-        {/* Sidebar */}
-        <div
-          className={`fixed top-0 left-0 h-full bg-white/10 backdrop-blur-xl border-r border-white/20 transition-all duration-300 z-20 ${
-            isSidebarOpen ? "w-64" : "w-0"
-          } overflow-hidden`}
-        >
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                {userName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h3 className="text-white font-semibold">{userName}</h3>
-                <p className="text-white/60 text-sm capitalize">{userRole}</p>
-              </div>
+      <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
+        {/* Static Sidebar - Always Visible */}
+        <aside className="w-64 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
+          {/* User Profile */}
+          <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+              {userName.charAt(0).toUpperCase()}
             </div>
-
-            <nav className="space-y-2">
-              <button
-                onClick={() => router.push('/homePage')}
-                className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition"
-              >
-                <HomeIcon size={20} />
-                <span>Home</span>
-              </button>
-              <button
-                onClick={() => router.push('/homePage')}
-                className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition"
-              >
-                <CalendarIcon size={20} />
-                <span>Calendar</span>
-              </button>
-              <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-white bg-white/20 rounded-lg"
-              >
-                <AppWindowIcon size={20} />
-                <span>Applications</span>
-              </button>
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => router.push('/adminUi')}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition"
-                >
-                  <UsersIcon size={20} />
-                  <span>Admin Panel</span>
-                </button>
-              )}
-              <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition"
-              >
-                <SettingsIcon size={20} />
-                <span>Settings</span>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition"
-              >
-                <LogOutIcon size={20} />
-                <span>Logout</span>
-              </button>
-            </nav>
+            <div>
+              <h3 className="text-white font-semibold text-sm">{userName}</h3>
+              <p className="text-white/60 text-xs capitalize">{userRole}</p>
+            </div>
           </div>
-        </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1">
+            <button
+              onClick={() => router.push('/adminUi')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+            >
+              <HomeIcon size={18} />
+              <span>Home</span>
+            </button>
+            <button
+              onClick={() => router.push('/homePage')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+            >
+              <CalendarIcon size={18} />
+              <span>Calendar</span>
+            </button>
+            <button
+              onClick={() => router.push('/applications')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
+            >
+              <AppWindowIcon size={18} />
+              <span>Applications</span>
+            </button>
+            {userRole === 'admin' && (
+              <button
+                onClick={() => alert('Admin Panel coming soon!')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+              >
+                <UsersIcon size={18} />
+                <span>Admin Panel</span>
+              </button>
+            )}
+            <button
+              onClick={() => alert('Settings coming soon!')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+            >
+              <SettingsIcon size={18} />
+              <span>Settings</span>
+            </button>
+          </nav>
+
+          {/* Logout */}
+          <div className="mt-auto pt-6 border-t border-white/10">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-sm"
+            >
+              <LogOutIcon size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </aside>
 
         {/* Main Content */}
-        <div
-          className={`transition-all duration-300 ${
-            isSidebarOpen ? "ml-64" : "ml-0"
-          }`}
-        >
-          {/* Sticky header */}
-          <div
-            className={`sticky top-0 w-full h-[110px] flex items-center justify-center transition-transform duration-500 z-10 ${
-              isHidden ? "-translate-y-full" : "translate-y-0"
-            }`}
-          >
-            <div className="w-4/5 h-[70px] flex items-center justify-between px-10 rounded-full border border-white/30 bg-white/10 shadow-2xl backdrop-blur-2xl">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="text-white/80 hover:text-white transition"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-              <h1 className="text-white text-2xl font-bold tracking-wide">
-                Office Applications
-              </h1>
-              <div className="w-6"></div>
+        <main className="flex-1 relative">
+          {/* Aurora background */}
+          <div className="absolute inset-0 z-0 w-full min-w-screen overflow-hidden">
+            <Aurora
+              colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
+              blend={0.5}
+              amplitude={1.0}
+              speed={0.5}
+            />
+          </div>
+
+          {/* Simple Header */}
+          <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                  <AppWindowIcon size={16} className="text-white" />
+                </div>
+                <h1 className="text-white text-xl font-semibold">Office Applications</h1>
+              </div>
             </div>
           </div>
 
           {/* Applications Grid */}
-          <div className="p-8">
+          <div className="relative z-20 p-8">
             <div className="max-w-7xl mx-auto">
               {/* Header */}
               <div className="mb-8">
@@ -272,7 +258,7 @@ const ApplicationsPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </ProtectedRoute>
   );

@@ -78,7 +78,7 @@ const Page = () => {
   };
 
   return (
-    <div className="relative  min-h-screen w-full">
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
       {/* Aurora background */}
       <div className="absolute inset-0 z-0 w-full min-w-screen overflow-hidden">
         <Aurora
@@ -131,7 +131,7 @@ const Page = () => {
 
       {/* Content - Login Card */}
       <div className="relative z-20 flex flex-col items-center w-full">
-        <Card className="mt-12 relative w-[340px] md:w-[400px] px-8 py-10 rounded-2xl bg-white/10 border border-white/30 shadow-xl backdrop-blur-lg">
+        <Card className="mt-12 relative w-[340px] md:w-[400px] px-8 py-10 rounded-2xl bg-black/40 border border-white/10 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col items-center mb-6">
             <svg width="44" height="44" fill="none" viewBox="0 0 32 32">
               <circle

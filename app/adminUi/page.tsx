@@ -25,8 +25,6 @@ import {
 import api from "@/lib/api";
 
 const AdminPage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [isHidden, setIsHidden] = useState<boolean>(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [upcomingEvents, setUpcomingEvents] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -272,55 +270,69 @@ const AdminPage: React.FC = () => {
   }, [showUsersModal]);
 
   return (
-    <div className="relative min-h-screen w-full flex">
+    <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
+      {/* Static Sidebar - Always Visible */}
+      <aside className="w-64 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
+        {/* User Profile */}
+        <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-sm">{userName}</h3>
+            <p className="text-white/60 text-xs capitalize">Admin</p>
+          </div>
+        </div>
 
-      {/* Admin Sidebar (no toggle button) */}
-      <aside
-        className={`bg-black/70 text-white flex-shrink-0 p-6 flex flex-col backdrop-blur-xl border-r border-white/20 shadow-2xl rounded-xl transition-all duration-300 ${
-          isSidebarOpen ? "w-64" : "w-0 overflow-hidden"
-        }`}
-        style={{
-          minHeight: "100vh",
-          boxShadow: isSidebarOpen
-            ? "0 8px 32px 0 rgba(31, 38, 135, 0.37)"
-            : "none",
-          borderRight: isSidebarOpen
-            ? "3px solid rgba(58, 41, 255, 0.3)"
-            : "none",
-          transition: "width 0.3s cubic-bezier(.4,0,.2,1)"
-        }}
-        onMouseLeave={() => setIsSidebarOpen(false)}
-        onMouseEnter={() => setIsSidebarOpen(true)}
-      >
-        {isSidebarOpen && (
-          <>
-            <div className="text-2xl font-bold mb-8 select-none">Admin Panel</div>
-            <nav className="flex-1 space-y-2">
-              <button onClick={() => router.push('/adminUi')} className="w-full flex items-center px-3 py-2 rounded-lg transition-all bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <LayoutDashboardIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">Dashboard</span>
-              </button>
-              <button onClick={() => setShowUsersModal(true)} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <UsersIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">Users</span>
-              </button>
-              <button onClick={() => alert('Analytics coming soon!')} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <ChartPieIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">Analytics</span>
-              </button>
-              <button onClick={() => alert('Settings coming soon!')} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <SettingsIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">Settings</span>
-              </button>
-            </nav>
-            <div className="mt-auto">
-              <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <LogOutIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">Logout</span>
-              </button>
-            </div>
-          </>
-        )}
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1">
+          <button
+            onClick={() => router.push('/adminUi')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-white/20 transition-all text-sm"
+          >
+            <HomeIcon size={18} />
+            <span>Home</span>
+          </button>
+          <button
+            onClick={() => router.push('/homePage')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+          >
+            <CalendarIcon size={18} />
+            <span>Calendar</span>
+          </button>
+          <button
+            onClick={() => router.push('/applications')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+          >
+            <AppWindowIcon size={18} />
+            <span>Applications</span>
+          </button>
+          <button
+            onClick={() => alert('Admin Panel coming soon!')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+          >
+            <UsersIcon size={18} />
+            <span>Admin Panel</span>
+          </button>
+          <button
+            onClick={() => alert('Settings coming soon!')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all text-sm"
+          >
+            <SettingsIcon size={18} />
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        {/* Logout */}
+        <div className="mt-auto pt-6 border-t border-white/10">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-sm"
+          >
+            <LogOutIcon size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -335,43 +347,14 @@ const AdminPage: React.FC = () => {
           />
         </div>
 
-        {/* Sticky header */}
-        <div
-          className={`sticky top-0 w-full h-[110px] flex items-center justify-center transition-transform duration-500 z-10 ${
-            isHidden ? "-translate-y-full" : "translate-y-0"
-          }`}
-        >
-          <div className="w-4/5 h-[70px] flex items-center justify-between px-10 rounded-full border border-white/30 bg-white/10 shadow-2xl backdrop-blur-2xl" style={{
-            boxShadow: "0 8px 32px 0 rgba(31,38,135,0.2)",
-            border: "1.5px solid rgba(255,255,255,0.28)",
-            backdropFilter: "blur(18px)"
-          }}>
-            {/* Left */}
-            <div className="flex items-center gap-4 select-none">
-              <span>
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" />
-                </svg>
-              </span>
-              <span className="text-white text-xl tracking-wide font-bold drop-shadow shadow-indigo-400/40">
-                EMS
-              </span>
-            </div>
-            {/* Right */}
-            <div className="flex space-x-8 items-center">
-              <button onClick={() => router.push('/adminUi')} type="button" className="flex items-center gap-2 text-white text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF50] to-[#FF94B450] shadow-[0_0_18px_0_rgba(58,41,255,0.25)] transition-all">
-                <HomeIcon size={18} /> HOME
-              </button>
-              <button onClick={() => router.push('/homePage')} type="button" className="flex items-center gap-2 text-white/80 text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF30] to-[#FF94B430] hover:shadow-[0_0_18px_0_rgba(58,41,255,0.25)] hover:text-indigo-200 transition-all">
-                <CalendarIcon size={18} /> CALENDAR
-              </button>
-              <button 
-                onClick={() => router.push('/applications')}
-                type="button" 
-                className="flex items-center gap-2 text-white/80 text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF30] to-[#FF94B430] hover:shadow-[0_0_18px_0_rgba(58,41,255,0.25)] hover:text-indigo-200 transition-all"
-              >
-                <AppWindowIcon size={18} /> APPS
-              </button>
+        {/* Simple Header */}
+        <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                <LayoutDashboardIcon size={16} className="text-white" />
+              </div>
+              <h1 className="text-white text-xl font-semibold">Admin Dashboard</h1>
             </div>
           </div>
         </div>
