@@ -42,6 +42,12 @@ const Page = () => {
       }
 
       // Store user data and token in localStorage
+      console.log('=== LOGIN SUCCESS ===');
+      console.log('User data:', data.user);
+      console.log('User role:', data.user.role);
+      console.log('Token:', data.token);
+      console.log('====================');
+      
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -54,9 +60,12 @@ const Page = () => {
       // Small delay to show success message
       setTimeout(() => {
         // Redirect based on role
+        console.log('Redirecting user with role:', data.user.role);
         if (data.user.role === "admin") {
+          console.log('Redirecting to /adminUi');
           window.location.href = "/adminUi";
         } else {
+          console.log('Redirecting to /homePage');
           window.location.href = "/homePage";
         }
       }, 800);

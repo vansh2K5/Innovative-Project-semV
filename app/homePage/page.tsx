@@ -14,9 +14,7 @@ import {
   MapPinIcon,
   UsersIcon,
   LogOutIcon,
-  LayoutDashboardIcon,
   SettingsIcon,
-  ChartPieIcon,
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -44,6 +42,8 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showDateModal, setShowDateModal] = useState<boolean>(false);
+  const [clickedDate, setClickedDate] = useState<Date | null>(null);
   const [userName, setUserName] = useState<string>("User");
   const [userRole, setUserRole] = useState<string>("user");
   const router = useRouter();
@@ -224,10 +224,6 @@ const HomePage: React.FC = () => {
                 <CalendarIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
                 <span className="tracking-wide font-semibold">Calendar</span>
               </button>
-              <button onClick={() => alert('My Events coming soon!')} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
-                <LayoutDashboardIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
-                <span className="tracking-wide font-semibold">My Events</span>
-              </button>
               <button onClick={() => alert('Settings coming soon!')} className="w-full flex items-center px-3 py-2 rounded-lg transition-all hover:bg-[#3A29FF33] hover:scale-105 group shadow-sm active:bg-white/40">
                 <SettingsIcon className="mr-3 group-hover:text-indigo-300 transition-colors" />
                 <span className="tracking-wide font-semibold">Settings</span>
@@ -374,6 +370,10 @@ const HomePage: React.FC = () => {
                     return (
                       <div
                         key={index}
+                        onClick={() => {
+                          setClickedDate(date);
+                          setShowDateModal(true);
+                        }}
                         className={`aspect-square p-2 rounded-lg border transition-all cursor-pointer ${
                           isToday
                             ? 'bg-purple-500/30 border-purple-400/50'
@@ -423,12 +423,21 @@ const HomePage: React.FC = () => {
                           <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
                         </div>
                         <h4 className="font-semibold mb-1">{event.title}</h4>
-                        <div className="flex items-center gap-2 text-xs opacity-80">
-                          <ClockIcon size={12} />
-                          {formatTime(event.startDate)} - {formatTime(event.endDate)}
+                        {event.description && (
+                          <p className="text-xs opacity-70 mb-2">{event.description}</p>
+                        )}
+                        <div className="space-y-1 text-xs opacity-80">
+                          <div className="flex items-center gap-2">
+                            <ClockIcon size={12} />
+                            <span>Start: {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.startDate)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ClockIcon size={12} />
+                            <span>End: {new Date(event.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.endDate)}</span>
+                          </div>
                         </div>
                         {event.location && (
-                          <div className="flex items-center gap-2 text-xs opacity-80 mt-1">
+                          <div className="flex items-center gap-2 text-xs opacity-80 mt-2">
                             <MapPinIcon size={12} />
                             {event.location}
                           </div>
@@ -451,20 +460,32 @@ const HomePage: React.FC = () => {
                     {upcomingEvents.map((event) => (
                       <div
                         key={event._id}
-                        className="p-3 rounded-lg bg-white/5 border border-white/20 hover:bg-white/10 transition"
+                        className={`p-3 rounded-lg border ${getPriorityColor(event.priority)}`}
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span>{getTypeIcon(event.type)}</span>
-                          <h4 className="text-white font-semibold text-sm">{event.title}</h4>
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="text-lg">{getTypeIcon(event.type)}</span>
+                          <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
                         </div>
-                        <div className="text-xs text-white/70">
-                          {new Date(event.startDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                        <h4 className="text-white font-semibold text-sm mb-1">{event.title}</h4>
+                        {event.description && (
+                          <p className="text-xs text-white/60 mb-2 line-clamp-2">{event.description}</p>
+                        )}
+                        <div className="space-y-1 text-xs text-white/70">
+                          <div className="flex items-center gap-2">
+                            <ClockIcon size={12} />
+                            <span>Start: {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.startDate)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ClockIcon size={12} />
+                            <span>End: {new Date(event.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.endDate)}</span>
+                          </div>
                         </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-xs text-white/70 mt-2">
+                            <MapPinIcon size={12} />
+                            {event.location}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -482,6 +503,80 @@ const HomePage: React.FC = () => {
         onClose={() => setShowCreateModal(false)}
         onEventCreated={handleEventCreated}
       />
+
+      {/* Date Events Modal */}
+      {showDateModal && clickedDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowDateModal(false)}>
+          <div className="bg-gradient-to-br from-purple-900/95 to-pink-900/95 border border-white/30 rounded-2xl shadow-2xl backdrop-blur-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-white text-2xl font-bold">
+                Events on {clickedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </h2>
+              <button
+                onClick={() => setShowDateModal(false)}
+                className="text-white/70 hover:text-white transition p-2 hover:bg-white/10 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {getEventsForDate(clickedDate).length === 0 ? (
+              <div className="text-center py-12">
+                <CalendarIcon size={48} className="mx-auto text-white/30 mb-4" />
+                <p className="text-white/70 text-lg">No events scheduled for this day</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {getEventsForDate(clickedDate).map((event) => (
+                  <div
+                    key={event._id}
+                    className={`p-4 rounded-lg border ${getPriorityColor(event.priority)}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{getTypeIcon(event.type)}</span>
+                        <div>
+                          <h3 className="text-white font-bold text-lg">{event.title}</h3>
+                          <span className="text-xs px-2 py-1 bg-white/20 rounded mt-1 inline-block">{event.priority}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {event.description && (
+                      <p className="text-white/80 text-sm mb-3 pl-11">{event.description}</p>
+                    )}
+
+                    <div className="space-y-2 text-sm text-white/90 pl-11">
+                      <div className="flex items-center gap-2">
+                        <ClockIcon size={14} />
+                        <span className="font-semibold">Start:</span>
+                        <span>{new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.startDate)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <ClockIcon size={14} />
+                        <span className="font-semibold">End:</span>
+                        <span>{new Date(event.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {formatTime(event.endDate)}</span>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPinIcon size={14} />
+                          <span className="font-semibold">Location:</span>
+                          <span>{event.location}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <UsersIcon size={14} />
+                        <span className="font-semibold">Created by:</span>
+                        <span>{event.createdBy.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

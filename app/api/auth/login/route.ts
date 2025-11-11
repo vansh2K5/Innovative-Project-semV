@@ -77,7 +77,9 @@ export async function POST(request: NextRequest) {
 
     // Create response with user data (excluding password)
     const userData = {
-      id: user._id,
+      userId: user._id.toString(), // Add userId for consistency
+      _id: user._id.toString(), // Keep _id for backward compatibility
+      id: user._id, // Keep id for backward compatibility
       email: user.email,
       name: user.name,
       role: user.role,

@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
+import User from './models/User';
+import connectDB from './db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '7d';
@@ -42,4 +44,16 @@ export function getUserFromRequest(request: NextRequest): TokenPayload | null {
   }
   
   return verifyToken(token);
+}
+
+// Verify user exists in database
+export async function verifyUserExists(userId: string): Promise<boolean> {
+  try {
+    await connectDB();
+    const user = await User.findById(userId);
+    return !!user;
+  } catch (error) {
+    console.error('Error verifying user exists:', error);
+    return false;
+  }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
-import { getUserFromRequest } from '@/lib/auth';
+import { getUserFromRequest, verifyUserExists } from '@/lib/auth';
 
 // GET all users (admin only)
 export async function GET(request: NextRequest) {
@@ -14,6 +14,15 @@ export async function GET(request: NextRequest) {
     if (!tokenUser) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Verify user still exists in database
+    const userExists = await verifyUserExists(tokenUser.userId);
+    if (!userExists) {
+      return NextResponse.json(
+        { error: 'User account no longer exists' },
         { status: 401 }
       );
     }

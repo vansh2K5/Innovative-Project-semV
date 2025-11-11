@@ -3,7 +3,7 @@ import connectDB from '@/lib/db';
 import Event from '@/lib/models/Event';
 import Analytics from '@/lib/models/Analytics';
 import User from '@/lib/models/User';
-import { getUserFromRequest } from '@/lib/auth';
+import { getUserFromRequest, verifyUserExists } from '@/lib/auth';
 
 // GET all events
 export async function GET(request: NextRequest) {
@@ -16,6 +16,15 @@ export async function GET(request: NextRequest) {
     if (!tokenUser) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Verify user still exists in database
+    const userExists = await verifyUserExists(tokenUser.userId);
+    if (!userExists) {
+      return NextResponse.json(
+        { error: 'User account no longer exists' },
         { status: 401 }
       );
     }
@@ -109,14 +118,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Debug logging
-    console.log('=== EVENT CREATION REQUEST ===');
-    console.log('Received body:', JSON.stringify(body, null, 2));
-    console.log('Title:', body.title);
-    console.log('StartDate:', body.startDate);
-    console.log('EndDate:', body.endDate);
-    console.log('=============================');
-    
     const {
       title,
       description,
@@ -134,10 +135,6 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!title || !startDate || !endDate) {
-      console.log('VALIDATION FAILED:');
-      console.log('  title:', title);
-      console.log('  startDate:', startDate);
-      console.log('  endDate:', endDate);
       return NextResponse.json(
         { error: 'Title, start date, and end date are required' },
         { status: 400 }

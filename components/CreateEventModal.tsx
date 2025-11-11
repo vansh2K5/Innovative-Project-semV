@@ -73,12 +73,6 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
         status: 'pending',
       };
 
-      // Debug logging
-      console.log('Sending event data:', eventData);
-      console.log('Title:', eventData.title);
-      console.log('StartDate:', eventData.startDate);
-      console.log('EndDate:', eventData.endDate);
-
       await api.events.create(eventData);
 
       setSuccess('Event created successfully!');
@@ -103,15 +97,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
         onClose();
       }, 1000);
     } catch (err: any) {
-      console.error('=== ERROR CREATING EVENT ===');
-      console.error('Error object:', err);
-      console.error('Error name:', err.name);
-      console.error('Error message:', err.message);
-      console.error('Error status:', err.status);
-      console.error('Error serverMessage:', err.serverMessage);
-      console.error('Error details:', err.details);
-      console.error('Error isValidation:', err.isValidation);
-      console.error('===========================');
+      console.error('Error creating event:', err);
       
       // Handle APIError with status codes and validation details
       if (err.name === 'APIError') {
@@ -254,7 +240,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
                 <option value="task" className="bg-purple-900">Task</option>
                 <option value="reminder" className="bg-purple-900">Reminder</option>
                 <option value="deadline" className="bg-purple-900">Deadline</option>
-                <option value="event" className="bg-purple-900">Event</option>
+                <option value="other" className="bg-purple-900">Other</option>
               </select>
             </div>
             <div>
@@ -270,7 +256,6 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
                 <option value="low" className="bg-purple-900">Low</option>
                 <option value="medium" className="bg-purple-900">Medium</option>
                 <option value="high" className="bg-purple-900">High</option>
-                <option value="urgent" className="bg-purple-900">Urgent</option>
               </select>
             </div>
           </div>

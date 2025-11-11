@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
-import { getUserFromRequest } from '@/lib/auth';
+import { getUserFromRequest, verifyUserExists } from '@/lib/auth';
 
 // GET single user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -21,7 +21,16 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    // Verify requesting user still exists
+    const userExists = await verifyUserExists(tokenUser.userId);
+    if (!userExists) {
+      return NextResponse.json(
+        { error: 'User account no longer exists' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
 
     // Users can view their own profile, admins can view any profile
     if (tokenUser.userId !== id && tokenUser.role !== 'admin') {
@@ -53,7 +62,7 @@ export async function GET(
 // PUT update user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -68,7 +77,16 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    // Verify requesting user still exists
+    const userExists = await verifyUserExists(tokenUser.userId);
+    if (!userExists) {
+      return NextResponse.json(
+        { error: 'User account no longer exists' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
 
     // Users can update their own profile, admins can update any profile
     if (tokenUser.userId !== id && tokenUser.role !== 'admin') {
@@ -125,7 +143,7 @@ export async function PUT(
 // DELETE user (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -140,6 +158,20 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
+
+    // Only verify requesting user exists if they're NOT deleting themselves
+    // (Allow self-deletion even if account is being deleted)
+    if (tokenUser.userId !== id) {
+      const userExists = await verifyUserExists(tokenUser.userId);
+      if (!userExists) {
+        return NextResponse.json(
+          { error: 'User account no longer exists' },
+          { status: 401 }
+        );
+      }
+    }
+
     // Check if user is admin
     if (tokenUser.role !== 'admin') {
       return NextResponse.json(
@@ -147,8 +179,6 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
-    const { id } = params;
 
     const user = await User.findByIdAndDelete(id);
 
