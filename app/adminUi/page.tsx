@@ -365,7 +365,11 @@ const AdminPage: React.FC = () => {
               <button onClick={() => router.push('/homePage')} type="button" className="flex items-center gap-2 text-white/80 text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF30] to-[#FF94B430] hover:shadow-[0_0_18px_0_rgba(58,41,255,0.25)] hover:text-indigo-200 transition-all">
                 <CalendarIcon size={18} /> CALENDAR
               </button>
-              <button type="button" className="flex items-center gap-2 text-white/80 text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF30] to-[#FF94B430] hover:shadow-[0_0_18px_0_rgba(58,41,255,0.25)] hover:text-indigo-200 transition-all">
+              <button 
+                onClick={() => router.push('/applications')}
+                type="button" 
+                className="flex items-center gap-2 text-white/80 text-base font-semibold tracking-wide px-5 py-2 rounded-md bg-gradient-to-br from-[#3A29FF30] to-[#FF94B430] hover:shadow-[0_0_18px_0_rgba(58,41,255,0.25)] hover:text-indigo-200 transition-all"
+              >
                 <AppWindowIcon size={18} /> APPS
               </button>
             </div>
