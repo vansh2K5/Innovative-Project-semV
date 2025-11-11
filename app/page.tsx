@@ -1,10 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Aurora from "@/components/Aurora";
 import { Card } from "@/components/ui/card";
 
 const Page = () => {
   const [isHidden, setIsHidden] = useState(false);
+  const router = useRouter();
+
+  // Redirect to login page on mount
+  useEffect(() => {
+    router.push("/login");
+  }, [router]);
 
   return (
     <div className="relative  min-h-screen w-full">
