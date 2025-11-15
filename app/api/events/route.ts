@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Event from '@/lib/models/Event';
 import Analytics from '@/lib/models/Analytics';
 import User from '@/lib/models/User';
+import UserPermissions from '@/lib/models/UserPermissions';
 import { getUserFromRequest, verifyUserExists } from '@/lib/auth';
 
 // GET all events
@@ -64,8 +65,8 @@ export async function GET(request: NextRequest) {
 
     // Get events with pagination
     const events = await Event.find(query)
-      .populate('createdBy', 'name email')
-      .populate('assignedTo', 'name email')
+      .populate('createdBy', '_id name email')
+      .populate('assignedTo', '_id name email')
       .sort({ startDate: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -110,6 +111,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check permission to create events
+    // Admins can always create events
+    if (tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
+      // For regular users, check if they have permission
+      const userPermissions = await UserPermissions.findOne({ userId: tokenUser.userId });
+      
+      if (userPermissions && !userPermissions.canCreateEvents) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to create events' },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await request.json();
     
     const {
@@ -135,6 +150,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate start date is not before today
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDateOnly = new Date(startDateObj);
+    startDateOnly.setHours(0, 0, 0, 0);
+
+    if (startDateOnly < today) {
+      return NextResponse.json(
+        { error: 'Event start date cannot be before today' },
+        { status: 400 }
+      );
+    }
+
+    // Validate end date is after start date
+    if (endDateObj < startDateObj) {
+      return NextResponse.json(
+        { error: 'End date must be after start date' },
+        { status: 400 }
+      );
+    }
+
     // Create new event
     const event = new Event({
       title,
@@ -155,9 +193,6 @@ export async function POST(request: NextRequest) {
     await event.save();
 
     // Log analytics activity
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     await Analytics.findOneAndUpdate(
       { userId: tokenUser.userId, date: today },
       {

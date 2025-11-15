@@ -3,12 +3,13 @@ import connectDB from '@/lib/db';
 import Event from '@/lib/models/Event';
 import Analytics from '@/lib/models/Analytics';
 import User from '@/lib/models/User';
+import UserPermissions from '@/lib/models/UserPermissions';
 import { getUserFromRequest } from '@/lib/auth';
 
 // GET single event
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -23,11 +24,11 @@ export async function GET(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const event = await Event.findById(id)
-      .populate('createdBy', 'name email')
-      .populate('assignedTo', 'name email');
+      .populate('createdBy', '_id name email')
+      .populate('assignedTo', '_id name email');
 
     if (!event) {
       return NextResponse.json(
@@ -66,7 +67,7 @@ export async function GET(
 // PUT update event
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -81,7 +82,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const event = await Event.findById(id);
 
@@ -102,6 +103,17 @@ export async function PUT(
         { error: 'Forbidden: Only event creator or admin can update' },
         { status: 403 }
       );
+    }
+
+    // For non-admin users, also check the canEditEvents permission
+    if (tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
+      const userPermissions = await UserPermissions.findOne({ userId: tokenUser.userId });
+      if (userPermissions && !userPermissions.canEditEvents) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to edit events' },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -140,8 +152,8 @@ export async function PUT(
       updateData,
       { new: true, runValidators: true }
     )
-      .populate('createdBy', 'name email')
-      .populate('assignedTo', 'name email');
+      .populate('createdBy', '_id name email')
+      .populate('assignedTo', '_id name email');
 
     // Log analytics if status changed to completed
     if (status === 'completed' && event.status !== 'completed') {
@@ -200,7 +212,7 @@ export async function PUT(
 // DELETE event
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -215,7 +227,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const event = await Event.findById(id);
 
@@ -236,6 +248,17 @@ export async function DELETE(
         { error: 'Forbidden: Only event creator or admin can delete' },
         { status: 403 }
       );
+    }
+
+    // For non-admin users, also check the canDeleteEvents permission
+    if (tokenUser.role !== 'admin' && tokenUser.role !== 'securityadmin') {
+      const userPermissions = await UserPermissions.findOne({ userId: tokenUser.userId });
+      if (userPermissions && !userPermissions.canDeleteEvents) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to delete events' },
+          { status: 403 }
+        );
+      }
     }
 
     await Event.findByIdAndDelete(id);

@@ -33,8 +33,16 @@ interface Event {
   createdBy: {
     name: string;
     email: string;
+    _id?: string;
   };
   assignedTo: any[];
+}
+
+interface User {
+  _id?: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 const HomePage: React.FC = () => {
@@ -46,6 +54,10 @@ const HomePage: React.FC = () => {
   const [clickedDate, setClickedDate] = useState<Date | null>(null);
   const [userName, setUserName] = useState<string>("User");
   const [userRole, setUserRole] = useState<string>("user");
+  const [userId, setUserId] = useState<string>("");
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [canCreateEvents, setCanCreateEvents] = useState<boolean>(true);
+  const [canDeleteEvents, setCanDeleteEvents] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,6 +75,25 @@ const HomePage: React.FC = () => {
         const user = JSON.parse(userStr);
         setUserName(user.name || 'User');
         setUserRole(user.role || 'user');
+        setUserId(user._id || user.id || '');
+
+        // Fetch user permissions
+        const permissionsResponse = await fetch(`/api/permissions?userId=${user._id || user.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        
+        if (permissionsResponse.ok) {
+          const permissionsData = await permissionsResponse.json();
+          const perms = permissionsData.permissions;
+          setCanCreateEvents(perms.canCreateEvents);
+          setCanDeleteEvents(perms.canDeleteEvents);
+        } else {
+          // Use default permissions for admins
+          if (user.role === 'admin' || user.role === 'securityadmin') {
+            setCanCreateEvents(true);
+            setCanDeleteEvents(true);
+          }
+        }
 
         // Fetch events for the current month
         const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
@@ -271,6 +302,55 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const canDeleteEvent = (event: Event): boolean => {
+    // Check if user has permission to delete events globally
+    if (!canDeleteEvents) return false;
+    // Admin can delete any event
+    if (userRole === 'admin') return true;
+    // Event creator can delete their own events
+    const createdById = event.createdBy._id || event.createdBy;
+    return createdById === userId || createdById.toString() === userId;
+  };
+
+  const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`Are you sure you want to delete the event "${eventTitle}"? This action cannot be undone!`)) {
+      return;
+    }
+
+    try {
+      setDeletingEventId(eventId);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('You do not have permission to delete this event');
+        }
+        if (response.status === 404) {
+          throw new Error('Event not found or already deleted');
+        }
+        throw new Error(data.error || data.message || 'Failed to delete event');
+      }
+
+      // Remove event from the local state
+      setEvents(events.filter(e => e._id !== eventId));
+      alert('Event deleted successfully');
+    } catch (error: any) {
+      console.error('Delete event error:', error);
+      alert(error.message || 'Failed to delete event');
+    } finally {
+      setDeletingEventId(null);
+    }
+  };
+
   const todayEvents = getEventsForDate(new Date());
   const upcomingEvents = events.filter(event => new Date(event.startDate) > new Date()).slice(0, 5);
 
@@ -412,10 +492,15 @@ const HomePage: React.FC = () => {
               )}
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transition-transform"
+                disabled={!canCreateEvents}
+                className={`flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-full shadow-lg transition-transform ${
+                  canCreateEvents
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 hover:scale-105'
+                    : 'bg-gray-500 cursor-not-allowed opacity-50'
+                }`}
               >
                 <PlusIcon size={20} />
-                Create Event
+                {canCreateEvents ? 'Create Event' : 'Create Event (Disabled)'}
               </button>
             </div>
           </div>
@@ -522,7 +607,18 @@ const HomePage: React.FC = () => {
                       >
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-lg">{getTypeIcon(event.type)}</span>
-                          <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
+                            {canDeleteEvent(event) && (
+                              <button
+                                onClick={() => handleDeleteEvent(event._id, event.title)}
+                                disabled={deletingEventId === event._id}
+                                className="text-xs px-2 py-1 bg-red-500/30 hover:bg-red-500/50 text-red-200 rounded transition disabled:opacity-50"
+                              >
+                                {deletingEventId === event._id ? '...' : '✕'}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <h4 className="font-semibold mb-1">{event.title}</h4>
                         {event.description && (
@@ -566,7 +662,18 @@ const HomePage: React.FC = () => {
                       >
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-lg">{getTypeIcon(event.type)}</span>
-                          <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs px-2 py-1 bg-white/20 rounded">{event.priority}</span>
+                            {canDeleteEvent(event) && (
+                              <button
+                                onClick={() => handleDeleteEvent(event._id, event.title)}
+                                disabled={deletingEventId === event._id}
+                                className="text-xs px-2 py-1 bg-red-500/30 hover:bg-red-500/50 text-red-200 rounded transition disabled:opacity-50"
+                              >
+                                {deletingEventId === event._id ? '...' : '✕'}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <h4 className="text-white font-semibold text-sm mb-1">{event.title}</h4>
                         {event.description && (
@@ -642,6 +749,15 @@ const HomePage: React.FC = () => {
                           <span className="text-xs px-2 py-1 bg-white/20 rounded mt-1 inline-block">{event.priority}</span>
                         </div>
                       </div>
+                      {canDeleteEvent(event) && (
+                        <button
+                          onClick={() => handleDeleteEvent(event._id, event.title)}
+                          disabled={deletingEventId === event._id}
+                          className="text-sm px-3 py-1 bg-red-500/30 hover:bg-red-500/50 text-red-200 rounded transition disabled:opacity-50"
+                        >
+                          {deletingEventId === event._id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      )}
                     </div>
 
                     {event.description && (

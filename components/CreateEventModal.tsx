@@ -46,6 +46,18 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
       // Validate date logic
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
+      
+      // Check if start date is not before today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDateOnly = new Date(formData.startDate);
+      startDateOnly.setHours(0, 0, 0, 0);
+      
+      if (startDateOnly < today) {
+        setError('Event start date cannot be before today');
+        return;
+      }
+      
       if (end < start) {
         setError('End date must be after start date');
         return;
@@ -97,12 +109,15 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
         onClose();
       }, 1000);
     } catch (err: any) {
-      console.error('Error creating event:', err);
-      
       // Handle APIError with status codes and validation details
       if (err.name === 'APIError') {
+        // Handle permission errors (403) - don't log to console
+        if (err.status === 403) {
+          setError('Permission Denied: You do not have permission to create events. Please contact your administrator.');
+        }
         // Handle validation errors with field-level details
-        if (err.isValidation && err.details) {
+        else if (err.isValidation && err.details) {
+          console.error('Validation error creating event:', err);
           // Convert details to field error map
           const errors: Record<string, string> = {};
           
@@ -127,12 +142,15 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
             setError(`Validation failed: ${err.serverMessage}`);
           }
         } else {
+          console.error('API error creating event:', err);
           // Non-validation API errors - show exact server message
-          setError(`Server error: ${err.serverMessage}`);
+          setError(`Error: ${err.serverMessage}`);
         }
       } else if (err.message) {
+        console.error('Error creating event:', err);
         setError(err.message);
       } else {
+        console.error('Unexpected error creating event:', err);
         setError('An unexpected error occurred. Please try again.');
       }
     } finally {
@@ -284,6 +302,7 @@ export default function CreateEventModal({ isOpen, onClose, onEventCreated }: Cr
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
                 required
                 className={`w-full px-4 py-3 rounded-lg bg-white/10 border text-white focus:outline-none focus:ring-2 ${
                   fieldErrors.startDate 
