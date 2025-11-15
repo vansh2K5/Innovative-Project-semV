@@ -359,7 +359,7 @@ const AdminPage: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 relative">
         {/* Aurora background */}
-        <div className="absolute inset-0 z-0 w-full min-w-screen overflow-hidden">
+        <div className="absolute inset-0 z-0 w-full overflow-hidden">
           <Aurora
             colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
             blend={0.5}
@@ -369,7 +369,7 @@ const AdminPage: React.FC = () => {
         </div>
 
         {/* Simple Header */}
-        <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
+        <div className="w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -632,7 +632,7 @@ const AdminPage: React.FC = () => {
                   type="text"
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  placeholder="John Doe"
+                  placeholder="name"
                   className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -643,7 +643,7 @@ const AdminPage: React.FC = () => {
                   type="email"
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  placeholder="john@example.com"
+                  placeholder="name@example.com"
                   className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>

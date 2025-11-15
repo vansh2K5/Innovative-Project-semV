@@ -168,7 +168,7 @@ const ApplicationsPage: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 relative">
           {/* Aurora background */}
-          <div className="absolute inset-0 z-0 w-full min-w-screen overflow-hidden">
+          <div className="absolute inset-0 z-0 w-full overflow-hidden">
             <Aurora
               colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
               blend={0.5}
@@ -178,7 +178,7 @@ const ApplicationsPage: React.FC = () => {
           </div>
 
           {/* Simple Header */}
-          <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
+          <div className="w-full py-6 px-8 z-10 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-md border-b border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">

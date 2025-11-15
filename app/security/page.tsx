@@ -126,7 +126,7 @@ const SecurityPage: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 relative">
           {/* Aurora background */}
-          <div className="absolute inset-0 z-0 w-full min-w-screen overflow-hidden">
+          <div className="absolute inset-0 z-0 w-full overflow-hidden">
             <Aurora
               colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
               blend={0.5}
@@ -136,7 +136,7 @@ const SecurityPage: React.FC = () => {
           </div>
 
           {/* Simple Header */}
-          <div className="sticky top-0 w-full py-6 px-8 z-10 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 backdrop-blur-md border-b border-yellow-400/20">
+          <div className="w-full py-6 px-8 z-10 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 backdrop-blur-md border-b border-yellow-400/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
@@ -168,7 +168,10 @@ const SecurityPage: React.FC = () => {
                   <p className="text-white/70 text-sm mb-4">
                     Manage user permissions, roles, and access levels across the system.
                   </p>
-                  <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                  <button 
+                    onClick={() => router.push('/access-control')}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
                     Manage Access
                   </button>
                 </Card>

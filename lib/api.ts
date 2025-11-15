@@ -379,10 +379,40 @@ export const analyticsAPI = {
   },
 };
 
+// Permissions API
+export const permissionsAPI = {
+  get: async (userId: string) => {
+    const response = await fetch(`${API_BASE_URL}/permissions?userId=${userId}`, {
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+    return handleResponse(response);
+  },
+
+  update: async (userId: string, permissions: {
+    canViewCalendar: boolean;
+    canCreateEvents: boolean;
+    canEditEvents: boolean;
+    canDeleteEvents: boolean;
+    canViewApplications: boolean;
+    canManageUsers: boolean;
+    canAccessSecurity: boolean;
+  }) => {
+    const response = await fetch(`${API_BASE_URL}/permissions`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ userId, ...permissions }),
+    });
+    return handleResponse(response);
+  },
+};
+
 // Export all APIs
 export default {
   auth: authAPI,
   users: usersAPI,
   events: eventsAPI,
   analytics: analyticsAPI,
+  permissions: permissionsAPI,
 };
