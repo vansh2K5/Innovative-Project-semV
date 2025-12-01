@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { KeyIcon, X } from 'lucide-react';
 
 interface AccessRole {
@@ -11,6 +11,14 @@ interface AccessRole {
 }
 
 export default function AccessControlDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   const roles: AccessRole[] = [
     {
       id: '1',

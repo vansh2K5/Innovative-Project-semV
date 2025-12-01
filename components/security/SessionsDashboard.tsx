@@ -21,15 +21,22 @@ interface SessionStats {
 }
 
 export default function SessionsDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
   const [sessions, setSessions] = useState<UserSession[]>([]);
   const [stats, setStats] = useState<SessionStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSessions();
-    const interval = setInterval(fetchSessions, 60000);
-    return () => clearInterval(interval);
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchSessions();
+      const interval = setInterval(fetchSessions, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [mounted]);
 
   const fetchSessions = async () => {
     try {
@@ -86,6 +93,8 @@ export default function SessionsDashboard({ onClose }: { onClose: () => void }) 
       console.error('Error invalidating sessions:', error);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">

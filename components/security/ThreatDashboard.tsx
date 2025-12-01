@@ -14,15 +14,22 @@ interface Threat {
 }
 
 export default function ThreatDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
   const [threats, setThreats] = useState<Threat[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'medium'>('all');
 
   useEffect(() => {
-    fetchThreats();
-    const interval = setInterval(fetchThreats, 30000);
-    return () => clearInterval(interval);
-  }, [filter]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchThreats();
+      const interval = setInterval(fetchThreats, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [filter, mounted]);
 
   const fetchThreats = async () => {
     try {
@@ -79,6 +86,8 @@ export default function ThreatDashboard({ onClose }: { onClose: () => void }) {
       console.error('Error updating threat status:', error);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">

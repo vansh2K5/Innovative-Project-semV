@@ -13,15 +13,22 @@ interface LogEntry {
 }
 
 export default function LogsDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState<'all' | 'error' | 'warn' | 'info'>('all');
 
   useEffect(() => {
-    fetchLogs();
-    const interval = setInterval(fetchLogs, 30000);
-    return () => clearInterval(interval);
-  }, [level]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchLogs();
+      const interval = setInterval(fetchLogs, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [level, mounted]);
 
   const fetchLogs = async () => {
     try {
@@ -59,6 +66,8 @@ export default function LogsDashboard({ onClose }: { onClose: () => void }) {
       console.error('Error exporting logs:', error);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">

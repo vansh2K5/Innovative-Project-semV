@@ -19,12 +19,19 @@ interface AuthConfig {
 }
 
 export default function AuthConfigDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
   const [config, setConfig] = useState<AuthConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchConfig();
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchConfig();
+    }
+  }, [mounted]);
 
   const fetchConfig = async () => {
     try {
@@ -42,6 +49,8 @@ export default function AuthConfigDashboard({ onClose }: { onClose: () => void }
       setLoading(false);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">

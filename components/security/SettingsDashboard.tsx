@@ -18,12 +18,19 @@ interface SecuritySettings {
 }
 
 export default function SettingsDashboard({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
   const [settings, setSettings] = useState<SecuritySettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSettings();
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      fetchSettings();
+    }
+  }, [mounted]);
 
   const fetchSettings = async () => {
     try {
@@ -41,6 +48,8 @@ export default function SettingsDashboard({ onClose }: { onClose: () => void }) 
       setLoading(false);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
