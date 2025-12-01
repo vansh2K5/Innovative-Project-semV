@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Allow cross-origin requests for Replit environment (proxied requests)
+  allowedDevOrigins: ['*'],
 };
 
 export default nextConfig;
