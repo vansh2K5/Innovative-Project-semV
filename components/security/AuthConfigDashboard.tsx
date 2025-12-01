@@ -123,7 +123,7 @@ export default function AuthConfigDashboard({ onClose }: { onClose: () => void }
                 <div className="bg-gray-800/50 rounded-lg p-4 text-sm space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Min Length:</span>
-                    <span className="text-gray-200">{config.features.passwordPolicies?.minLength || 8}</span>
+                    <span className="text-gray-200">{config?.features?.passwordPolicies?.minLength || 8}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Require Uppercase:</span>
@@ -135,7 +135,7 @@ export default function AuthConfigDashboard({ onClose }: { onClose: () => void }
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Max Age (days):</span>
-                    <span className="text-gray-200">{config.features.passwordPolicies?.maxAge || 90}</span>
+                    <span className="text-gray-200">{config?.features?.passwordPolicies?.maxAge || 90}</span>
                   </div>
                 </div>
               </div>
@@ -145,15 +145,15 @@ export default function AuthConfigDashboard({ onClose }: { onClose: () => void }
                 <div className="bg-gray-800/50 rounded-lg p-4 text-sm space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Idle Timeout (min):</span>
-                    <span className="text-gray-200">{config.features.sessionSettings?.idleTimeout || 30}</span>
+                    <span className="text-gray-200">{config?.features?.sessionSettings?.idleTimeout || 30}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Absolute Timeout (min):</span>
-                    <span className="text-gray-200">{config.features.sessionSettings?.absoluteTimeout || 480}</span>
+                    <span className="text-gray-200">{config?.features?.sessionSettings?.absoluteTimeout || 480}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Concurrent Sessions:</span>
-                    <span className="text-gray-200">{config.features.sessionSettings?.concurrentSessions || 5}</span>
+                    <span className="text-gray-200">{config?.features?.sessionSettings?.concurrentSessions || 5}</span>
                   </div>
                 </div>
               </div>

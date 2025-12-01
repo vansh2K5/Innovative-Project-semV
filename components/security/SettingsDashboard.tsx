@@ -94,7 +94,7 @@ export default function SettingsDashboard({ onClose }: { onClose: () => void }) 
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">HSTS Max Age (seconds)</span>
-                    <span className="text-gray-200">{settings.helmet.hstsMaxAge.toLocaleString()}</span>
+                    <span className="text-gray-200">{settings.helmet?.hstsMaxAge ? settings.helmet.hstsMaxAge.toLocaleString() : 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -104,15 +104,15 @@ export default function SettingsDashboard({ onClose }: { onClose: () => void }) 
                 <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Session Max Age (ms)</span>
-                    <span className="text-gray-200">{settings.sessions.maxAge.toLocaleString()}</span>
+                    <span className="text-gray-200">{settings.sessions?.maxAge ? settings.sessions.maxAge.toLocaleString() : 'N/A'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Max Concurrent Sessions</span>
-                    <span className="text-gray-200">{settings.sessions.maxConcurrentSessions}</span>
+                    <span className="text-gray-200">{settings.sessions?.maxConcurrentSessions || 'N/A'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Session Timeout (ms)</span>
-                    <span className="text-gray-200">{settings.sessions.sessionTimeout.toLocaleString()}</span>
+                    <span className="text-gray-200">{settings.sessions?.sessionTimeout ? settings.sessions.sessionTimeout.toLocaleString() : 'N/A'}</span>
                   </div>
                 </div>
               </div>
