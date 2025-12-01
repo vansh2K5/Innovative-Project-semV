@@ -199,30 +199,6 @@ const Page = () => {
               }
             </button>
 
-            <div className="flex flex-col gap-2 mt-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegisterMode(!isRegisterMode);
-                  setError("");
-                  setSuccess("");
-                }}
-                className="text-sm text-white/80 hover:text-white hover:underline text-center transition"
-              >
-                {isRegisterMode 
-                  ? "Already have an account? Login" 
-                  : "Don't have an account? Sign Up"
-                }
-              </button>
-              {!isRegisterMode && (
-                <a
-                  href="#"
-                  className="text-xs text-white/60 hover:underline text-center"
-                >
-                  Forgot password?
-                </a>
-              )}
-            </div>
           </form>
         </Card>
       </div>
