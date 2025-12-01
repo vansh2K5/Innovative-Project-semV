@@ -59,6 +59,9 @@ export default function SessionsDashboard({ onClose }: { onClose: () => void }) 
   const handleInvalidateSession = async (userId: string, sessionId: string) => {
     try {
       const token = localStorage.getItem('token');
+      const currentUser = localStorage.getItem('user');
+      const currentUserId = currentUser ? JSON.parse(currentUser).userId : null;
+      
       const res = await fetch('/api/security/sessions', {
         method: 'DELETE',
         headers: {
@@ -68,7 +71,14 @@ export default function SessionsDashboard({ onClose }: { onClose: () => void }) 
         body: JSON.stringify({ action: 'invalidate', userId, sessionId }),
       });
       if (res.ok) {
-        fetchSessions();
+        // If invalidating current user's session, log them out
+        if (userId === currentUserId) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        } else {
+          fetchSessions();
+        }
       }
     } catch (error) {
       console.error('Error invalidating session:', error);
@@ -78,6 +88,9 @@ export default function SessionsDashboard({ onClose }: { onClose: () => void }) 
   const handleInvalidateAllUserSessions = async (userId: string) => {
     try {
       const token = localStorage.getItem('token');
+      const currentUser = localStorage.getItem('user');
+      const currentUserId = currentUser ? JSON.parse(currentUser).userId : null;
+      
       const res = await fetch('/api/security/sessions', {
         method: 'DELETE',
         headers: {
@@ -87,7 +100,14 @@ export default function SessionsDashboard({ onClose }: { onClose: () => void }) 
         body: JSON.stringify({ action: 'invalidateAll', userId }),
       });
       if (res.ok) {
-        fetchSessions();
+        // If invalidating current user's sessions, log them out
+        if (userId === currentUserId) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        } else {
+          fetchSessions();
+        }
       }
     } catch (error) {
       console.error('Error invalidating sessions:', error);

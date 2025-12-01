@@ -5,7 +5,8 @@ import {
   invalidateSession,
   invalidateAllUserSessions,
   cleanupExpiredSessions,
-  getSessionConfig
+  getSessionConfig,
+  getSession
 } from '@/lib/security/session-manager';
 import { verifyToken } from '@/lib/auth';
 
@@ -75,14 +76,24 @@ export async function DELETE(request: NextRequest) {
         if (!invalidated) {
           return NextResponse.json({ error: 'Session not found' }, { status: 404 });
         }
-        return NextResponse.json({ success: true, message: 'Session invalidated' });
+        
+        // Log the session invalidation
+        const { securityLogger } = await import('@/lib/security/winston-logger');
+        securityLogger.session.invalidated(userId, sessionId, 'Admin invalidation');
+        
+        return NextResponse.json({ success: true, message: 'Session invalidated', userId, sessionId });
 
       case 'invalidateAll':
         if (!userId) {
           return NextResponse.json({ error: 'userId required' }, { status: 400 });
         }
         const count = invalidateAllUserSessions(userId);
-        return NextResponse.json({ success: true, message: `${count} sessions invalidated` });
+        
+        // Log the sessions invalidation
+        const { securityLogger: logger } = await import('@/lib/security/winston-logger');
+        logger.admin.action(decoded.userId, 'invalidate_all_sessions', userId, { sessionsInvalidated: count });
+        
+        return NextResponse.json({ success: true, message: `${count} sessions invalidated`, userId, count });
 
       case 'cleanup':
         const cleaned = cleanupExpiredSessions();
