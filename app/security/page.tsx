@@ -19,10 +19,17 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 
+interface SecurityStats {
+  threats: { totalThreats: number; byLevel: { critical: number; high: number; medium: number; low: number } };
+  logs: { totalLogs: number; byLevel: { error: number; warn: number; info: number } };
+  sessions: { totalSessions: number; activeUsers: number };
+}
+
 const SecurityPage: React.FC = () => {
   const [userName, setUserName] = useState<string>("Admin");
   const [userRole, setUserRole] = useState<string>("admin");
   const [loading, setLoading] = useState<boolean>(true);
+  const [stats, setStats] = useState<SecurityStats | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,15 +39,37 @@ const SecurityPage: React.FC = () => {
       setUserName(user.name || 'Admin');
       setUserRole(user.role || 'admin');
 
-      // Verify admin or security admin role
       if (user.role !== 'admin' && user.role !== 'securityadmin') {
         alert('Access Denied: This page is only accessible to Admins');
         router.push('/homePage');
         return;
       }
     }
+    
+    fetchSecurityStats();
     setLoading(false);
   }, [router]);
+
+  const fetchSecurityStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const [threatsRes, logsRes, sessionsRes] = await Promise.all([
+        fetch('/api/security/threats?statsOnly=true', { headers }).then(r => r.ok ? r.json() : null),
+        fetch('/api/security/logs?statsOnly=true', { headers }).then(r => r.ok ? r.json() : null),
+        fetch('/api/security/sessions?statsOnly=true', { headers }).then(r => r.ok ? r.json() : null),
+      ]);
+
+      setStats({
+        threats: threatsRes || { totalThreats: 0, byLevel: { critical: 0, high: 0, medium: 0, low: 0 } },
+        logs: logsRes || { totalLogs: 0, byLevel: { error: 0, warn: 0, info: 0 } },
+        sessions: sessionsRes || { totalSessions: 0, activeUsers: 0 },
+      });
+    } catch (error) {
+      console.error('Error fetching security stats:', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -155,6 +184,28 @@ const SecurityPage: React.FC = () => {
                 <p className="text-white/70 text-lg">Manage system security, access controls, and monitoring</p>
               </div>
 
+              {/* Security Stats Overview */}
+              {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 backdrop-blur-xl">
+                    <div className="text-red-200 text-sm">Critical Threats</div>
+                    <div className="text-white text-3xl font-bold">{stats.threats.byLevel?.critical || 0}</div>
+                  </div>
+                  <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4 backdrop-blur-xl">
+                    <div className="text-yellow-200 text-sm">Active Warnings</div>
+                    <div className="text-white text-3xl font-bold">{(stats.threats.byLevel?.high || 0) + (stats.threats.byLevel?.medium || 0)}</div>
+                  </div>
+                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 backdrop-blur-xl">
+                    <div className="text-blue-200 text-sm">Active Sessions</div>
+                    <div className="text-white text-3xl font-bold">{stats.sessions.totalSessions || 0}</div>
+                  </div>
+                  <div className="bg-purple-500/20 border border-purple-500/30 rounded-xl p-4 backdrop-blur-xl">
+                    <div className="text-purple-200 text-sm">Total Log Entries</div>
+                    <div className="text-white text-3xl font-bold">{stats.logs.totalLogs || 0}</div>
+                  </div>
+                </div>
+              )}
+
               {/* Security Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Access Control */}
@@ -176,82 +227,133 @@ const SecurityPage: React.FC = () => {
                   </button>
                 </Card>
 
-                {/* Authentication */}
+                {/* Authentication - Keycloak */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-700">
                       <LockIcon size={24} className="text-white" />
                     </div>
-                    <h2 className="text-white text-xl font-bold">Authentication</h2>
+                    <div>
+                      <h2 className="text-white text-xl font-bold">Authentication</h2>
+                      <span className="text-green-300 text-xs">Keycloak Integration</span>
+                    </div>
                   </div>
                   <p className="text-white/70 text-sm mb-4">
-                    Configure authentication methods, password policies, and session management.
+                    Configure SSO, password policies, MFA, and session management via Keycloak.
                   </p>
-                  <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                  <button 
+                    onClick={() => alert('Keycloak authentication panel coming soon!')}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  >
                     Configure Auth
                   </button>
                 </Card>
 
-                {/* Threat Detection */}
+                {/* Threat Detection - Wazuh */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-700">
                       <AlertTriangleIcon size={24} className="text-white" />
                     </div>
-                    <h2 className="text-white text-xl font-bold">Threat Detection</h2>
+                    <div>
+                      <h2 className="text-white text-xl font-bold">Threat Detection</h2>
+                      <span className="text-red-300 text-xs">Wazuh Integration</span>
+                    </div>
                   </div>
-                  <p className="text-white/70 text-sm mb-4">
-                    Monitor and respond to security threats, suspicious activities, and breaches.
+                  <p className="text-white/70 text-sm mb-2">
+                    Monitor threats, brute force attacks, and suspicious activities.
                   </p>
-                  <button className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                  {stats && (
+                    <div className="flex gap-2 mb-3">
+                      <span className="px-2 py-1 bg-red-500/30 text-red-200 text-xs rounded">
+                        {stats.threats.totalThreats} total threats
+                      </span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => alert('Wazuh threat panel coming soon!')}
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  >
                     View Threats
                   </button>
                 </Card>
 
-                {/* Activity Logs */}
+                {/* Activity Logs - Grafana Loki */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700">
                       <ActivityIcon size={24} className="text-white" />
                     </div>
-                    <h2 className="text-white text-xl font-bold">Activity Logs</h2>
+                    <div>
+                      <h2 className="text-white text-xl font-bold">Activity Logs</h2>
+                      <span className="text-purple-300 text-xs">Grafana Loki Compatible</span>
+                    </div>
                   </div>
-                  <p className="text-white/70 text-sm mb-4">
-                    View detailed logs of all system activities, user actions, and changes.
+                  <p className="text-white/70 text-sm mb-2">
+                    View detailed logs of all system activities with Loki export support.
                   </p>
-                  <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                  {stats && (
+                    <div className="flex gap-2 mb-3">
+                      <span className="px-2 py-1 bg-purple-500/30 text-purple-200 text-xs rounded">
+                        {stats.logs.totalLogs} entries
+                      </span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => alert('Activity logs panel coming soon!')}
+                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  >
                     View Logs
                   </button>
                 </Card>
 
-                {/* User Sessions */}
+                {/* Active Sessions - Express Session */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700">
                       <UsersIcon size={24} className="text-white" />
                     </div>
-                    <h2 className="text-white text-xl font-bold">Active Sessions</h2>
+                    <div>
+                      <h2 className="text-white text-xl font-bold">Active Sessions</h2>
+                      <span className="text-orange-300 text-xs">Express Session Manager</span>
+                    </div>
                   </div>
-                  <p className="text-white/70 text-sm mb-4">
-                    Monitor active user sessions and manage session timeouts and security.
+                  <p className="text-white/70 text-sm mb-2">
+                    Monitor and manage active user sessions with timeout controls.
                   </p>
-                  <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                  {stats && (
+                    <div className="flex gap-2 mb-3">
+                      <span className="px-2 py-1 bg-orange-500/30 text-orange-200 text-xs rounded">
+                        {stats.sessions.activeUsers} active users
+                      </span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => alert('Session management panel coming soon!')}
+                    className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                  >
                     View Sessions
                   </button>
                 </Card>
 
-                {/* Security Settings */}
+                {/* Security Settings - Helmet.js */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-700">
                       <SettingsIcon size={24} className="text-white" />
                     </div>
-                    <h2 className="text-white text-xl font-bold">Security Settings</h2>
+                    <div>
+                      <h2 className="text-white text-xl font-bold">Security Settings</h2>
+                      <span className="text-yellow-300 text-xs">Helmet.js Protection</span>
+                    </div>
                   </div>
                   <p className="text-white/70 text-sm mb-4">
-                    Configure global security settings, policies, and compliance requirements.
+                    Configure HTTP security headers, CSP, XSS protection, and HSTS.
                   </p>
-                  <button className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition">
+                  <button 
+                    onClick={() => alert('Security settings panel coming soon!')}
+                    className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
+                  >
                     Configure Settings
                   </button>
                 </Card>

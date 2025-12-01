@@ -1,7 +1,7 @@
 'use client';
 
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import './Aurora.css';
 
@@ -117,8 +117,14 @@ export default function Aurora(props) {
   propsRef.current = props;
 
   const ctnDom = useRef(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const ctn = ctnDom.current;
     if (!ctn) return;
 
@@ -198,7 +204,11 @@ export default function Aurora(props) {
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amplitude]);
+  }, [amplitude, mounted]);
+
+  if (!mounted) {
+    return <div className="aurora-container" style={{ background: 'linear-gradient(135deg, #3A29FF 0%, #FF94B4 50%, #FF3232 100%)' }} />;
+  }
 
   return <div ref={ctnDom} className="aurora-container" />;
 }

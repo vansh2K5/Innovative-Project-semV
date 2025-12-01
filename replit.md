@@ -69,6 +69,52 @@ None documented yet.
 - 📊 Performance analytics and activity tracking
 - 🎨 Modern UI with TailwindCSS and animations
 
+## Security Integrations (December 1, 2025)
+The following open-source security tools have been integrated:
+
+### 1. Keycloak Authentication (`lib/security/keycloak-auth.ts`)
+- SSO (Single Sign-On) support
+- OAuth 2.0 / OpenID Connect
+- MFA (Multi-Factor Authentication) ready
+- Token validation and refresh
+- Role-based access from Keycloak
+
+### 2. Wazuh Threat Detection (`lib/security/threat-detector.ts`)
+- Brute force attack detection
+- Rate limiting and abuse prevention
+- SQL injection and XSS detection
+- Suspicious input pattern matching
+- IP blocking capability
+- Wazuh API integration for external SIEM
+
+### 3. Grafana Loki Activity Logs (`lib/security/activity-logger.ts`)
+- Structured logging with multiple levels
+- Category-based filtering
+- Loki-compatible output format
+- Export to JSON/CSV
+- Authentication and access event logging
+
+### 4. Express Session Management (`lib/security/session-manager.ts`)
+- Session creation and validation
+- Concurrent session limits
+- Session timeout and renewal
+- User session tracking
+- Automatic cleanup of expired sessions
+
+### 5. Helmet.js Security Headers (`lib/security/helmet-config.ts`)
+- Content Security Policy (CSP)
+- XSS Protection
+- HSTS (HTTP Strict Transport Security)
+- Frame Options (clickjacking protection)
+- Content-Type sniffing prevention
+
+### Security API Endpoints
+- `GET/PUT /api/security/settings` - Security configuration
+- `GET/DELETE /api/security/logs` - Activity logs
+- `GET/PUT /api/security/threats` - Threat management
+- `GET/DELETE /api/security/sessions` - Session management
+- `GET/PUT /api/security/auth-config` - Authentication config
+
 ## Setup Complete ✓
 
 The application is now running in Replit! Here's what's ready:

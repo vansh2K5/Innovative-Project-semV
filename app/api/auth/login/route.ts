@@ -3,8 +3,19 @@ import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import Analytics from '@/lib/models/Analytics';
 import { generateToken } from '@/lib/auth';
+import { securityLogger } from '@/lib/security/winston-logger';
+import { createSession } from '@/lib/security/session-manager';
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || '127.0.0.1';
+}
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request);
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  
   try {
     await connectDB();
 
@@ -23,6 +34,7 @@ export async function POST(request: NextRequest) {
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
+      securityLogger.auth.login('unknown', email.toLowerCase(), ip, false);
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -41,6 +53,7 @@ export async function POST(request: NextRequest) {
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
+      securityLogger.auth.login(user._id.toString(), email.toLowerCase(), ip, false);
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -74,6 +87,11 @@ export async function POST(request: NextRequest) {
       email: user.email,
       role: user.role,
     });
+
+    // Create security session
+    const session = createSession(user._id.toString(), userAgent, ip);
+    securityLogger.auth.login(user._id.toString(), user.email, ip, true);
+    securityLogger.session.created(user._id.toString(), session.id, ip);
 
     // Create response with user data (excluding password)
     const userData = {
