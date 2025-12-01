@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation";
 import Aurora from "@/components/Aurora";
 import { Card } from "@/components/ui/card";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ThreatDashboard from "@/components/security/ThreatDashboard";
+import LogsDashboard from "@/components/security/LogsDashboard";
+import SessionsDashboard from "@/components/security/SessionsDashboard";
+import AuthConfigDashboard from "@/components/security/AuthConfigDashboard";
+import SettingsDashboard from "@/components/security/SettingsDashboard";
+import AccessControlDashboard from "@/components/security/AccessControlDashboard";
 import {
   ShieldIcon,
   HomeIcon,
@@ -30,6 +36,7 @@ const SecurityPage: React.FC = () => {
   const [userRole, setUserRole] = useState<string>("admin");
   const [loading, setLoading] = useState<boolean>(true);
   const [stats, setStats] = useState<SecurityStats | null>(null);
+  const [openPanel, setOpenPanel] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -88,9 +95,7 @@ const SecurityPage: React.FC = () => {
   return (
     <ProtectedRoute>
       <div className="relative min-h-screen w-full flex bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900">
-        {/* Static Sidebar - Always Visible */}
         <aside className="w-64 h-screen sticky top-0 bg-black/40 backdrop-blur-xl text-white flex-shrink-0 p-6 flex flex-col border-r border-white/10">
-          {/* User Profile */}
           <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
               {userName.charAt(0).toUpperCase()}
@@ -101,7 +106,6 @@ const SecurityPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-1">
             <button
               onClick={() => router.push('/adminUi')}
@@ -140,7 +144,6 @@ const SecurityPage: React.FC = () => {
             </button>
           </nav>
 
-          {/* Logout */}
           <div className="mt-auto pt-6 border-t border-white/10">
             <button
               onClick={handleLogout}
@@ -152,9 +155,7 @@ const SecurityPage: React.FC = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 relative">
-          {/* Aurora background */}
           <div className="absolute inset-0 z-0 w-full overflow-hidden">
             <Aurora
               colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
@@ -164,7 +165,6 @@ const SecurityPage: React.FC = () => {
             />
           </div>
 
-          {/* Simple Header */}
           <div className="w-full py-6 px-8 z-10 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 backdrop-blur-md border-b border-yellow-400/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -176,7 +176,6 @@ const SecurityPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Security Content */}
           <div className="relative z-20 p-8">
             <div className="w-full">
               <div className="mb-8">
@@ -184,7 +183,6 @@ const SecurityPage: React.FC = () => {
                 <p className="text-white/70 text-lg">Manage system security, access controls, and monitoring</p>
               </div>
 
-              {/* Security Stats Overview */}
               {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                   <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 backdrop-blur-xl">
@@ -206,9 +204,7 @@ const SecurityPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Security Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Access Control */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700">
@@ -220,14 +216,13 @@ const SecurityPage: React.FC = () => {
                     Manage user permissions, roles, and access levels across the system.
                   </p>
                   <button 
-                    onClick={() => router.push('/access-control')}
+                    onClick={() => setOpenPanel("access")}
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                   >
                     Manage Access
                   </button>
                 </Card>
 
-                {/* Authentication - Keycloak */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-700">
@@ -242,14 +237,13 @@ const SecurityPage: React.FC = () => {
                     Configure SSO, password policies, MFA, and session management via Keycloak.
                   </p>
                   <button 
-                    onClick={() => alert('Keycloak authentication panel coming soon!')}
+                    onClick={() => setOpenPanel("auth")}
                     className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                   >
                     Configure Auth
                   </button>
                 </Card>
 
-                {/* Threat Detection - Wazuh */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-700">
@@ -271,14 +265,13 @@ const SecurityPage: React.FC = () => {
                     </div>
                   )}
                   <button 
-                    onClick={() => alert('Wazuh threat panel coming soon!')}
+                    onClick={() => setOpenPanel("threats")}
                     className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                   >
                     View Threats
                   </button>
                 </Card>
 
-                {/* Activity Logs - Grafana Loki */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700">
@@ -300,14 +293,13 @@ const SecurityPage: React.FC = () => {
                     </div>
                   )}
                   <button 
-                    onClick={() => alert('Activity logs panel coming soon!')}
+                    onClick={() => setOpenPanel("logs")}
                     className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                   >
                     View Logs
                   </button>
                 </Card>
 
-                {/* Active Sessions - Express Session */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700">
@@ -329,14 +321,13 @@ const SecurityPage: React.FC = () => {
                     </div>
                   )}
                   <button 
-                    onClick={() => alert('Session management panel coming soon!')}
+                    onClick={() => setOpenPanel("sessions")}
                     className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                   >
                     View Sessions
                   </button>
                 </Card>
 
-                {/* Security Settings - Helmet.js */}
                 <Card className="bg-white/10 border border-white/30 shadow-2xl rounded-2xl backdrop-blur-2xl p-6 hover:scale-105 transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-700">
@@ -351,7 +342,7 @@ const SecurityPage: React.FC = () => {
                     Configure HTTP security headers, CSP, XSS protection, and HSTS.
                   </p>
                   <button 
-                    onClick={() => alert('Security settings panel coming soon!')}
+                    onClick={() => setOpenPanel("settings")}
                     className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition"
                   >
                     Configure Settings
@@ -359,7 +350,6 @@ const SecurityPage: React.FC = () => {
                 </Card>
               </div>
 
-              {/* Info Section */}
               <div className="mt-12 p-6 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-xl">
                 <h3 className="text-white text-xl font-bold mb-3 flex items-center gap-2">
                   <ShieldIcon size={24} className="text-yellow-400" />
@@ -386,6 +376,13 @@ const SecurityPage: React.FC = () => {
             </div>
           </div>
         </main>
+
+        {openPanel === "threats" && <ThreatDashboard onClose={() => setOpenPanel(null)} />}
+        {openPanel === "logs" && <LogsDashboard onClose={() => setOpenPanel(null)} />}
+        {openPanel === "sessions" && <SessionsDashboard onClose={() => setOpenPanel(null)} />}
+        {openPanel === "auth" && <AuthConfigDashboard onClose={() => setOpenPanel(null)} />}
+        {openPanel === "settings" && <SettingsDashboard onClose={() => setOpenPanel(null)} />}
+        {openPanel === "access" && <AccessControlDashboard onClose={() => setOpenPanel(null)} />}
       </div>
     </ProtectedRoute>
   );
