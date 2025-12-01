@@ -45,7 +45,7 @@ This is a full-stack Employee Management System built with Next.js 16, React 19,
 ## Configuration
 
 ### Required Environment Variables
-- `MONGODB_URI` - MongoDB connection string (MongoDB Atlas recommended)
+- `MONGODB_URI` - MongoDB connection string (set ✓)
 - `SESSION_SECRET` - Already set (for JWT signing)
 
 ### Ports
@@ -69,6 +69,38 @@ None documented yet.
 - 📊 Performance analytics and activity tracking
 - 🎨 Modern UI with TailwindCSS and animations
 
-## Default Credentials (after DB setup)
-- Admin: `admin@ems.com` / `admin123`
-- User: `user@ems.com` / `user123`
+## Setup Complete ✓
+
+The application is now running in Replit! Here's what's ready:
+
+### Frontend
+- Running on http://localhost:5000 (Replit webview)
+- Next.js 16 development server active
+- All pages serving correctly
+
+### Backend
+- MongoDB Atlas connected via `MONGODB_URI`
+- API routes ready (auth, users, events, analytics)
+- All endpoints available for requests
+
+### Next Steps to Use
+1. **Create your first admin user:**
+   - Use the Sign Up form to create an account
+   - In MongoDB Atlas, update that user's role to `"admin"`:
+     ```javascript
+     db.users.updateOne(
+       { email: "your@email.com" },
+       { $set: { role: "admin" } }
+     )
+     ```
+   - Or manually insert admin user via MongoDB console
+
+2. **Login and explore**
+   - Navigate to `/login`
+   - Use the admin account to access dashboard and admin panel
+
+### Optional: Populate Sample Data
+To create sample events and analytics data, you can:
+- Manually insert documents in MongoDB Atlas
+- Use the API endpoints directly
+- Implement the setup script for your MongoDB Atlas instance

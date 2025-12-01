@@ -33,7 +33,16 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 41917
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["npm", "start"]
 build = ["npm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+MONGODB_URI = "mongodb+srv://dhruvkothare_db_user:ewJtl7OKkoljQlzm@innovativecluster.3hkse6n.mongodb.net/"
