@@ -1,0 +1,179 @@
+# Employee Management System - Replit Setup
+
+## Overview
+This is a full-stack Employee Management System built with Next.js 16, React 19, TypeScript, and MongoDB. The application provides user management, calendar/event tracking, and performance analytics with role-based access control.
+
+## Recent Changes (December 1, 2025)
+- Configured for Replit environment
+- Updated Next.js dev server to run on port 5000 with host 0.0.0.0
+- Added `allowedDevOrigins: ['*']` to Next.js config for Replit proxy support
+- Cleaned and reinstalled dependencies
+- Workflow configured for frontend (Start application)
+
+## Project Architecture
+
+### Tech Stack
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, TailwindCSS
+- **Backend:** Next.js API Routes
+- **Database:** MongoDB (requires connection string)
+- **Authentication:** JWT with bcryptjs
+- **UI Components:** Radix UI, Lucide Icons, GSAP animations
+
+### Project Structure
+```
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── users/         # User management (admin only)
+│   │   ├── events/        # Calendar/events
+│   │   └── analytics/     # Performance tracking
+│   ├── homePage/          # User dashboard
+│   ├── adminUi/           # Admin dashboard
+│   ├── login/             # Login page
+│   └── layout.tsx         # Root layout
+├── lib/
+│   ├── models/            # Mongoose models
+│   │   ├── User.ts
+│   │   ├── Event.ts
+│   │   └── Analytics.ts
+│   ├── db.ts              # MongoDB connection
+│   ├── auth.ts            # Auth utilities
+│   └── api.ts             # Frontend API client
+└── components/            # React components
+```
+
+## Configuration
+
+### Required Environment Variables
+- `MONGODB_URI` - MongoDB connection string (set ✓)
+- `SESSION_SECRET` - Already set (for JWT signing)
+
+### Ports
+- Frontend: 5000 (webview)
+- Backend: Integrated with frontend (Next.js API routes)
+
+### Database Setup
+The application requires MongoDB. Once connected, run:
+```bash
+npm run setup
+```
+This creates the database schema, indexes, and sample users.
+
+## User Preferences
+None documented yet.
+
+## Key Features
+- 🔐 JWT-based authentication with role-based access control
+- 👥 User management (admin only)
+- 📅 Calendar with events, meetings, tasks, deadlines
+- 📊 Performance analytics and activity tracking
+- 🎨 Modern UI with TailwindCSS and animations
+
+## Security Integrations (December 1, 2025) ✓ COMPLETED
+
+The following open-source security tools have been fully integrated with interactive dashboards:
+
+### 1. Keycloak Authentication (`lib/security/keycloak-auth.ts`)
+- SSO (Single Sign-On) support
+- OAuth 2.0 / OpenID Connect
+- MFA (Multi-Factor Authentication) ready
+- Token validation and refresh
+- Role-based access from Keycloak
+- **Dashboard:** AuthConfigDashboard (interactive modal with live settings)
+
+### 2. Wazuh Threat Detection (`lib/security/threat-detector.ts`)
+- Brute force attack detection
+- Rate limiting and abuse prevention
+- SQL injection and XSS detection
+- Suspicious input pattern matching
+- IP blocking capability
+- Wazuh API integration for external SIEM
+- **Dashboard:** ThreatDashboard (real-time threat filtering and actions)
+
+### 3. Grafana Loki Activity Logs (`lib/security/activity-logger.ts`)
+- Structured logging with multiple levels
+- Category-based filtering
+- Loki-compatible output format
+- Export to JSON/CSV
+- Authentication and access event logging (Winston logger)
+- **Dashboard:** LogsDashboard (searchable logs with export capabilities)
+
+### 4. Express Session Management (`lib/security/session-manager.ts`)
+- Session creation and validation
+- Concurrent session limits
+- Session timeout and renewal
+- User session tracking
+- Automatic cleanup of expired sessions
+- **Dashboard:** SessionsDashboard (manage active user sessions)
+
+### 5. Helmet.js Security Headers (`lib/security/helmet-config.ts`)
+- Content Security Policy (CSP)
+- XSS Protection
+- HSTS (HTTP Strict Transport Security)
+- Frame Options (clickjacking protection)
+- Content-Type sniffing prevention
+- **Dashboard:** SettingsDashboard (view and configure security headers)
+
+### 6. Access Control & RBAC
+- Admin, Security Admin, User roles
+- Fine-grained permission management
+- Role-based endpoint protection
+- **Dashboard:** AccessControlDashboard (manage roles and permissions)
+
+### Security API Endpoints (All Functional)
+- `GET/PUT /api/security/settings` - Security configuration
+- `GET/DELETE /api/security/logs?statsOnly=true` - Activity logs with export
+- `GET/PUT /api/security/threats` - Threat management with IP blocking
+- `GET/DELETE /api/security/sessions` - Session management and invalidation
+- `GET/PUT /api/security/auth-config` - Authentication & Keycloak config
+
+### Security Dashboard Components
+All 6 interactive panels now work:
+1. ✓ Access Control - Manage roles and permissions
+2. ✓ Authentication (Keycloak) - Configure SSO and MFA
+3. ✓ Threat Detection (Wazuh) - Monitor and block threats
+4. ✓ Activity Logs (Loki) - Search and export logs
+5. ✓ Active Sessions (Express) - Manage user sessions
+6. ✓ Security Settings (Helmet) - Configure HTTP headers
+
+### Integration in Auth Flow
+- Login events logged to security logger (Winston)
+- Sessions created via session manager on authentication
+- Session invalidation on logout
+- IP and User-Agent tracking for all security events
+
+## Setup Complete ✓
+
+The application is now running in Replit! Here's what's ready:
+
+### Frontend
+- Running on http://localhost:5000 (Replit webview)
+- Next.js 16 development server active
+- All pages serving correctly
+
+### Backend
+- MongoDB Atlas connected via `MONGODB_URI`
+- API routes ready (auth, users, events, analytics)
+- All endpoints available for requests
+
+### Next Steps to Use
+1. **Create your first admin user:**
+   - Use the Sign Up form to create an account
+   - In MongoDB Atlas, update that user's role to `"admin"`:
+     ```javascript
+     db.users.updateOne(
+       { email: "your@email.com" },
+       { $set: { role: "admin" } }
+     )
+     ```
+   - Or manually insert admin user via MongoDB console
+
+2. **Login and explore**
+   - Navigate to `/login`
+   - Use the admin account to access dashboard and admin panel
+
+### Optional: Populate Sample Data
+To create sample events and analytics data, you can:
+- Manually insert documents in MongoDB Atlas
+- Use the API endpoints directly
+- Implement the setup script for your MongoDB Atlas instance
