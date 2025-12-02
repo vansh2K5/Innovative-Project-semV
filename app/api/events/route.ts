@@ -43,7 +43,17 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
 
-    // All users (both admin and regular) can see all events
+    // Role-based event visibility filtering
+    // Admins can see all events, other users only see events visible to their role
+    if (tokenUser.role !== 'admin') {
+      query.$or = [
+        { visibleToAll: true },
+        { visibleToAll: { $exists: false } },
+        { targetRoles: tokenUser.role },
+        { createdBy: tokenUser.userId },
+        { assignedTo: tokenUser.userId },
+      ];
+    }
 
     if (startDate && endDate) {
       query.startDate = {
@@ -140,6 +150,8 @@ export async function POST(request: NextRequest) {
       isAllDay,
       recurrence,
       reminders,
+      visibleToAll,
+      targetRoles,
     } = body;
 
     // Validate input
@@ -173,6 +185,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate role visibility settings - only admins can set role-specific visibility
+    let eventVisibleToAll = true;
+    let eventTargetRoles: string[] = [];
+    
+    if (tokenUser.role === 'admin' || tokenUser.role === 'securityadmin') {
+      eventVisibleToAll = visibleToAll !== false;
+      if (!eventVisibleToAll && Array.isArray(targetRoles)) {
+        eventTargetRoles = targetRoles;
+      }
+    }
+
     // Create new event
     const event = new Event({
       title,
@@ -181,9 +204,11 @@ export async function POST(request: NextRequest) {
       endDate: new Date(endDate),
       type: type || 'other',
       priority: priority || 'medium',
-      status: 'pending', // Always use 'pending' for new events
+      status: 'pending',
       createdBy: tokenUser.userId,
       assignedTo: assignedTo || [],
+      targetRoles: eventTargetRoles,
+      visibleToAll: eventVisibleToAll,
       location,
       isAllDay: isAllDay || false,
       recurrence,

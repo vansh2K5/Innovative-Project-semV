@@ -3,7 +3,19 @@
 ## Overview
 This is a full-stack Employee Management System built with Next.js 16, React 19, TypeScript, and MongoDB. The application provides user management, calendar/event tracking, and performance analytics with role-based access control.
 
-## Recent Changes (December 1, 2025)
+## Recent Changes (December 2, 2025)
+- **Role-based Event Visibility**: Admin can now create events visible to specific roles or all roles
+  - Event model extended with `targetRoles` and `visibleToAll` fields
+  - CreateEventModal includes multi-select dropdown for role targeting (admin only)
+- **Custom Role Management**: Created Role model with configurable permissions
+  - New `/api/roles` endpoint for CRUD operations on roles
+  - AccessControlDashboard now supports creating/editing/deleting custom roles
+  - System roles (admin, securityadmin, user) are protected
+- **Session Uptime Tracking**: Sessions now track uptime for work time calculations
+  - SessionsDashboard displays real-time uptime for each session
+  - Total uptime calculated per user for time tracking purposes
+
+## Previous Changes (December 1, 2025)
 - Configured for Replit environment
 - Updated Next.js dev server to run on port 5000 with host 0.0.0.0
 - Added `allowedDevOrigins: ['*']` to Next.js config for Replit proxy support
@@ -34,12 +46,20 @@ This is a full-stack Employee Management System built with Next.js 16, React 19,
 ├── lib/
 │   ├── models/            # Mongoose models
 │   │   ├── User.ts
-│   │   ├── Event.ts
+│   │   ├── Event.ts       # Extended with targetRoles, visibleToAll
+│   │   ├── Role.ts        # NEW: Custom role management
 │   │   └── Analytics.ts
+│   ├── security/          # Security modules
+│   │   └── session-manager.ts  # Extended with uptime tracking
 │   ├── db.ts              # MongoDB connection
 │   ├── auth.ts            # Auth utilities
 │   └── api.ts             # Frontend API client
+├── app/api/roles/         # NEW: Role management API
 └── components/            # React components
+    ├── CreateEventModal.tsx   # Updated with role targeting
+    └── security/
+        ├── AccessControlDashboard.tsx  # Updated with custom role creation
+        └── SessionsDashboard.tsx       # Updated with uptime display
 ```
 
 ## Configuration
