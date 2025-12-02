@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 export interface Session {
   id: string;
   userId: string;
+  userName?: string;
+  userRole?: string;
   userAgent: string;
   ipAddress: string;
   createdAt: Date;
@@ -10,6 +12,33 @@ export interface Session {
   expiresAt: Date;
   isActive: boolean;
   metadata: Record<string, any>;
+}
+
+export function calculateUptime(session: Session): {
+  totalSeconds: number;
+  formatted: string;
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
+  const now = new Date();
+  const start = new Date(session.createdAt);
+  const totalSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
+  
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  
+  let formatted = '';
+  if (hours > 0) {
+    formatted += `${hours}h `;
+  }
+  if (minutes > 0 || hours > 0) {
+    formatted += `${minutes}m `;
+  }
+  formatted += `${seconds}s`;
+  
+  return { totalSeconds, formatted: formatted.trim(), hours, minutes, seconds };
 }
 
 export interface SessionConfig {
@@ -44,11 +73,19 @@ export function updateSessionConfig(config: Partial<SessionConfig>): SessionConf
   return sessionConfig;
 }
 
-export function createSession(userId: string, userAgent: string, ipAddress: string): Session {
+export function createSession(
+  userId: string, 
+  userAgent: string, 
+  ipAddress: string,
+  userName?: string,
+  userRole?: string
+): Session {
   const now = new Date();
   const session: Session = {
     id: uuidv4(),
     userId: userId,
+    userName,
+    userRole,
     userAgent,
     ipAddress,
     createdAt: now,

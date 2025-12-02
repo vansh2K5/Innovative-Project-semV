@@ -11,6 +11,8 @@ export interface IEvent extends Document {
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   createdBy: mongoose.Types.ObjectId;
   assignedTo: mongoose.Types.ObjectId[];
+  targetRoles: string[];
+  visibleToAll: boolean;
   location?: string;
   isAllDay: boolean;
   recurrence?: {
@@ -71,6 +73,16 @@ const EventSchema = new Schema<IEvent>(
         ref: 'User',
       },
     ],
+    targetRoles: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    visibleToAll: {
+      type: Boolean,
+      default: true,
+    },
     location: {
       type: String,
       trim: true,
@@ -113,6 +125,8 @@ EventSchema.index({ startDate: 1, endDate: 1 });
 EventSchema.index({ createdBy: 1 });
 EventSchema.index({ assignedTo: 1 });
 EventSchema.index({ status: 1 });
+EventSchema.index({ targetRoles: 1 });
+EventSchema.index({ visibleToAll: 1 });
 
 const Event: Model<IEvent> = mongoose.models.Event || mongoose.model<IEvent>('Event', EventSchema);
 
